@@ -5,7 +5,6 @@ abstract class ExpressionAbstract
 {
 	abstract public function getGuestCache();
 	abstract public function getBlockInternal();
-	abstract public function getRegistrationChallenge($includeContact);
 	abstract public function countriesToExpression(array $countries, $applyTo = '');
 	public function getMediaAttachmentCache() {}
 	public function getR2TokenAuth($hostname, $secretKey) {}

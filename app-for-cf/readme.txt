@@ -7,7 +7,7 @@ Tags: cloudflare, caching, performance, security, SEO
 Requires at least: 5.2
 Tested up to: 6.8
 Requires PHP: 5.4.0
-Stable tag: 1.9.3.1
+Stable tag: 1.9.4
 
 All things Cloudflare (caching, flexible SSL, Turnstile, settings, rules, analytics, media in R2, image transforms [AVIF, WebP], secure admin area).
 
@@ -16,6 +16,7 @@ All things Cloudflare (caching, flexible SSL, Turnstile, settings, rules, analyt
 Unlock advanced Cloudflare features without being a network administrator or developer. Works with any Cloudflare plan (including Free), no Automatic Platform Optimization (APO) subscription needed.
 
 * Cache HTML at network edge
+* Preload JavaScript and CSS
 * View/set all Cloudflare settings
 * Fixes Cloudflare Flexible SSL redirect loops
 * Fixes situation when IPs are coming through as Cloudflare IPs rather than user IPs
@@ -33,6 +34,10 @@ Unlock advanced Cloudflare features without being a network administrator or dev
 App for Cloudflare® can automatically cache your HTML pages in 330+ Cloudflare data centers around the world. "Standard" WordPress caching plugins can’t escape the laws of physics because **information can't travel faster than the speed of light** (even if the page is cached, the cache exists on your physical origin server, which can be **over 20,000 km from an end user**). Caching content in Cloudflare data centers makes your website faster by putting your website cache closer to end-users (95% of the world's population is within 50ms of a Cloudflare data center).
 
 This can be done **without Cloudflare Workers or even a Page Rule** (done with a single Cache Rule on Cloudflare's side, and custom code in the plugin).
+
+**Preload JavaScript and CSS**
+
+Speed your site up by using the option that instructs browsers to preload JavaScript and CSS used to render the page being viewed. Can be used on its own, or in conjunction with Cloudflare's [Early Hints](https://blog.cloudflare.com/early-hints/) function.
 
 **Manage all Cloudflare settings**
 
@@ -72,7 +77,7 @@ Track third parties that are sending email on your behalf (for example an email 
 
 **Multisite network support**
 
-You can have a network-wide Cloudflare API token that can be overridden on a per site basis. In the case where a multisite network operator has the site domains in a single Cloudflare account, they can allow the site users to utilize Cloudflare features for their individual site without disclosing the underlying actual API token.
+You can have a network-wide Cloudflare API token that can be overridden on a per site basis. In the case where a multisite network operator has the site domains in a single Cloudflare account, they can allow the site users to use Cloudflare features for their individual site without disclosing the underlying actual API token.
 
 Additionally, a single Pro license for the main network site allows the media from all sites in the network to be stored in the cloud, within a single Cloudflare R2 bucket.
 
@@ -206,10 +211,16 @@ Yes, please do! You can find the suggestion area [over here](https://appforcf.co
 25. Media stored in R2 shows an orange cloud in the media browser.
 26. Move individual media to/from R2.
 27. Move all media in bulk to/from R2.
-28. For multisite networks, you can utilize a single Cloudflare API token for all your sites in your network (which can be optionally overridden on a per site basis).
+28. For multisite networks, you can use a single Cloudflare API token for all your sites in your network (which can be optionally overridden on a per site basis).
 29. For multisite networks, you can optionally use a single R2 bucket to store the media across all your sites.
 
 == Changelog ==
+= 1.9.4 (2025-07-01) =
+* Updated charting library (Chart.js) to 4.5.0
+* Simplified internal function for converting IPs to/from binary representations
+* Fixed issue where Purge Cache button in admin bar wouldn't work
+* New option (Preload resources): automatically adds Link header that includes JavaScript and CSS URLs for the page (tells browsers to preload resources used by the page)
+
 = 1.9.3.1 (2025-06-05) =
 * Fixed issue where guest page caching could by disabled, but not enabled
 * Added support for Cache Rules that contain browser bypass TTL

@@ -20,11 +20,6 @@ trait WP
 		return;
 	}
 
-	public function getRegistrationChallenge($includeContact)
-	{
-		return '(http.request.full_uri contains "' . site_url('wp-login.php?action=register') . '")';
-	}
-
 	public function countriesToExpression(array $countries, $applyTo = '')
 	{
 		$expression = [];

@@ -19,11 +19,10 @@ class WordPress
 		elseif($type == 'js')
 		{
 			wp_enqueue_script('app-for-cf_admin_js', APP_FOR_CLOUDFLARE_PLUGIN_URL . 'assets/cf/js/admin.min.js', [], APP_FOR_CLOUDFLARE_VERSION, ['in_footer' => true]);
-
 		}
 		elseif($type == 'chart')
 		{
-			wp_enqueue_script('app-for-cf_chartjs_js', APP_FOR_CLOUDFLARE_PLUGIN_URL . 'assets/chartjs/chart.umd.js', [], '4.4.9', ['in_footer' => true]);
+			wp_enqueue_script('app-for-cf_chartjs_js', APP_FOR_CLOUDFLARE_PLUGIN_URL . 'assets/chartjs/chart.umd.js', [], '4.5.0', ['in_footer' => true]);
 			wp_enqueue_script('app-for-cf_chart_js', APP_FOR_CLOUDFLARE_PLUGIN_URL . 'assets/cf/js/chart.min.js', [], APP_FOR_CLOUDFLARE_VERSION, ['in_footer' => true]);
 		}
 		elseif($type == 'notice')

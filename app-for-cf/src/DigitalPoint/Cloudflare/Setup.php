@@ -28,6 +28,7 @@ class Setup
 			'cloudflareFirewallExpireDays' => 7,
 			'cloudflareBlockIpsSpamClean' => 1,
 			'cfExternalDataUrl' => '',
+			'cloudflarePreload' => 1,
 			'cfWebpCompression' => 0,
 			'cfImagesTransform' => 0,
 			'cfLicenseKey' => '',

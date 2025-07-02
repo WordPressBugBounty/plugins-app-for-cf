@@ -5,6 +5,8 @@ class Pub
 {
 	protected static $instance;
 
+	protected $preload = [];
+
 	/**
 	 * Protected constructor. Use {@link getInstance()} instead.
 	 */
@@ -16,6 +18,12 @@ class Pub
 	{
 		if (!static::$instance)
 		{
+			$cloudflareRepo = new \DigitalPoint\Cloudflare\Repository\Cloudflare();
+			if ($cloudflareRepo->option('cloudflarePreload'))
+			{
+				ob_start();
+			}
+
 			$class = __CLASS__;
 			static::$instance = new $class;
 
@@ -85,6 +93,11 @@ class Pub
 	protected function initHooks()
 	{
 		add_filter('wp_headers', [$this, 'handleHeaders'], 9999999);
+
+		add_filter('script_loader_tag', [$this, 'handleScriptLoaderTag'], 9999999, 3);
+		add_filter('style_loader_tag', [$this, 'handleStyleLoaderTag'], 9999999, 3);
+
+		add_action('wp_print_footer_scripts', [$this, 'handlePrintFooterScripts'], 9999999);
 
 		$purgeEverythingActions = [
 			'autoptimize_action_cachepurged',	// Compat with https://wordpress.org/plugins/autoptimize
@@ -205,6 +218,29 @@ class Pub
 		}
 
 		return $headers;
+	}
+
+	public function handleScriptLoaderTag($tag, $handle, $src)
+	{
+		$this->preload['<' . $src . '>;as=script;rel=preload'] = true;
+		return $tag;
+	}
+
+	public function handleStyleLoaderTag($tag, $handle, $href)
+	{
+		if (strpos($href, '/ie.css') === false)
+		{
+			$this->preload['<' . $href . '>;as=style;rel=preload'] = true;
+		}
+		return $tag;
+	}
+
+	public function handlePrintFooterScripts()
+	{
+		if (!headers_sent() && $this->preload)
+		{
+			header('Link: ' . implode(',', array_keys($this->preload)), false);
+		}
 	}
 
 	public static function purgeCacheEverything()
@@ -420,12 +456,12 @@ class Pub
 		</style>
 		<script>
 			window.addEventListener("DOMContentLoaded",()=>{
-				document.querySelector("#wp-admin-bar-purge-cache a").addEventListener("click",async (e)=>{
+				document.querySelector("#wp-admin-bar-purge-cache a").addEventListener("click",async (e)=>{					
 					e.preventDefault();
 					const formData = new FormData();
 					formData.append("_wpnonce","' . esc_attr(wp_create_nonce()) . '");	
 					try {
-						const response = await fetch(e.target.getAttribute("href"), {
+						const response = await fetch(document.querySelector("#wp-admin-bar-purge-cache a").getAttribute("href"), {
 							method: "POST",
 							body: formData,
 	                     });
