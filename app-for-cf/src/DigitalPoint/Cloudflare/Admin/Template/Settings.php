@@ -592,7 +592,7 @@ class Settings extends AbstractTemplate
 				</label>
 				<div class="explain"><?php
 					/* translators: %1$s = <a href=...>, %2$s = </a> */
-					printf(esc_html__('Leverages HTTP Link header to instruct a browser which resources to preload. Can be used in conjunction with the %1$sEarly Hints%2$s Cloudflare setting.', 'app-for-cf'), '<a href="' . esc_url('https://blog.cloudflare.com/early-hints/') . '" target="_blank">', '</a>');
+					printf(esc_html__('Leverages HTTP Link header to instruct a browser which resources to preload. A maximum of 10 resources will be preloaded. Can be used in conjunction with the %1$sEarly Hints%2$s Cloudflare setting.', 'app-for-cf'), '<a href="' . esc_url('https://blog.cloudflare.com/early-hints/') . '" target="_blank">', '</a>');
 				?></div>
 			</td>
 		</tr>

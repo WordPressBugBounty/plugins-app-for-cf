@@ -6,6 +6,7 @@ class Pub
 	protected static $instance;
 
 	protected $preload = [];
+	protected $cloudflareRepo = null;
 
 	/**
 	 * Protected constructor. Use {@link getInstance()} instead.
@@ -18,13 +19,7 @@ class Pub
 	{
 		if (!static::$instance)
 		{
-			$cloudflareRepo = new \DigitalPoint\Cloudflare\Repository\Cloudflare();
-			if ($cloudflareRepo->option('cloudflarePreload'))
-			{
-				ob_start();
-			}
-
-			$class = __CLASS__;
+			$class = self::class;
 			static::$instance = new $class;
 
 			// Set the real IP of the end user if a site isn't already doing this at the web server level and handle Flexible SSL redirection loop
@@ -35,7 +30,6 @@ class Pub
 
 		return static::$instance;
 	}
-
 
 	public static function autoload($class)
 	{
@@ -92,12 +86,18 @@ class Pub
 	 */
 	protected function initHooks()
 	{
+		$this->cloudflareRepo = new \DigitalPoint\Cloudflare\Repository\Cloudflare();
+		if ($this->cloudflareRepo->option('cloudflarePreload'))
+		{
+			ob_start();
+
+			add_filter('script_loader_tag', [$this, 'handleScriptLoaderTag'], 9999999, 3);
+			add_filter('style_loader_tag', [$this, 'handleStyleLoaderTag'], 9999999, 3);
+
+			add_action('wp_print_footer_scripts', [$this, 'handlePrintFooterScripts'], 9999999);
+		}
+
 		add_filter('wp_headers', [$this, 'handleHeaders'], 9999999);
-
-		add_filter('script_loader_tag', [$this, 'handleScriptLoaderTag'], 9999999, 3);
-		add_filter('style_loader_tag', [$this, 'handleStyleLoaderTag'], 9999999, 3);
-
-		add_action('wp_print_footer_scripts', [$this, 'handlePrintFooterScripts'], 9999999);
 
 		$purgeEverythingActions = [
 			'autoptimize_action_cachepurged',	// Compat with https://wordpress.org/plugins/autoptimize
@@ -138,9 +138,7 @@ class Pub
 		add_filter('wp_get_attachment_url', [$this, 'filterWpGetAttachmentUrl'], 1048576, 2);
 		add_filter('wp_calculate_image_srcset', [$this, 'filterWpCalculateImageSrcset'], 1048576, 5);
 
-
-		$cloudflareRepo = new \DigitalPoint\Cloudflare\Repository\Cloudflare();
-		$turnstileOptions = $cloudflareRepo->option('cfTurnstile');
+		$turnstileOptions = $this->cloudflareRepo->option('cfTurnstile');
 		if (!empty($turnstileOptions['siteKey']) && !empty($turnstileOptions['secretKey']))
 		{
 			\DigitalPoint\Cloudflare\Turnstile\WordPress::getInstance($turnstileOptions);
@@ -153,20 +151,12 @@ class Pub
 		}
 	}
 
-	/**
-	 * Do something on activation?
-	 * @static
-	 */
 	public static function plugin_activation()
 	{
 		\DigitalPoint\Cloudflare\Setup::install();
 		\DigitalPoint\Cloudflare\Helper\Api::check(true);
 	}
 
-	/**
-	 * Do something on deactivation?
-	 * @static
-	 */
 	public static function plugin_deactivation()
 	{
 		\DigitalPoint\Cloudflare\Setup::uninstall();
@@ -191,7 +181,7 @@ class Pub
 	/*
 	 * wp_headers hook does not get fired for login (or admin) pages, so we don't need to check if it's the login page.
 	 */
-	public static function handleHeaders($headers)
+	public function handleHeaders($headers)
 	{
 		$noCache = is_user_logged_in();
 
@@ -200,8 +190,7 @@ class Pub
 			$noCache = (bool)preg_grep('#^wordpress_|comment_|wp-#si', array_keys($_COOKIE));
 		}
 
-		$cloudflareRepo = new \DigitalPoint\Cloudflare\Repository\Cloudflare();
-		$cloudflareAppOptions = $cloudflareRepo->option(null);
+		$cloudflareAppOptions = $this->cloudflareRepo->option(null);
 
 		$cacheTime = intval(@$cloudflareAppOptions['cfPageCachingSeconds']);
 
@@ -222,15 +211,18 @@ class Pub
 
 	public function handleScriptLoaderTag($tag, $handle, $src)
 	{
-		$this->preload['<' . $src . '>;as=script;rel=preload'] = true;
+		if (is_string($src) && strlen($src) > 3)
+		{
+			$this->preload['<' . sanitize_url($src) . '>;as=script;rel=preload'] = true;
+		}
 		return $tag;
 	}
 
 	public function handleStyleLoaderTag($tag, $handle, $href)
 	{
-		if (strpos($href, '/ie.css') === false)
+		if (is_string($href) && strlen($href) > 3 && strpos($href, '/ie.css') === false)
 		{
-			$this->preload['<' . $href . '>;as=style;rel=preload'] = true;
+			$this->preload['<' . sanitize_url($href) . '>;as=style;rel=preload'] = true;
 		}
 		return $tag;
 	}
@@ -239,17 +231,16 @@ class Pub
 	{
 		if (!headers_sent() && $this->preload)
 		{
-			header('Link: ' . implode(',', array_keys($this->preload)), false);
+			header('Link: ' . implode(',', array_slice(array_keys($this->preload), 0, 10)), false);
 		}
 	}
 
-	public static function purgeCacheEverything()
+	public function purgeCacheEverything()
 	{
-		$cloudflareRepo = new \DigitalPoint\Cloudflare\Repository\Cloudflare();
-		$cloudflareRepo->purgeCache();
+		$this->cloudflareRepo->purgeCache();
 	}
 
-	public static function purgeCacheByPostIds($postIds)
+	public function purgeCacheByPostIds($postIds)
 	{
 		$postIds = (array)$postIds;
 		$urls = [];
@@ -379,11 +370,9 @@ class Pub
 		{
 			$chunks = array_chunk($urls, 30);
 
-			$cloudflareRepo = new \DigitalPoint\Cloudflare\Repository\Cloudflare();
-
 			foreach ($chunks as $chunk)
 			{
-				if (!$cloudflareRepo->purgeCache(['files' => $chunk]))
+				if (!$this->cloudflareRepo->purgeCache(['files' => $chunk]))
 				{
 					break;
 				}
@@ -399,7 +388,7 @@ class Pub
 	{
 		if ($new == 'publish' || $old == 'publish')
 		{
-			static::purgeCacheByPostIds($post->ID);
+			static::$instance->purgeCacheByPostIds($post->ID);
 		}
 	}
 
@@ -407,7 +396,7 @@ class Pub
 	{
 		if(!empty($comment->comment_post_ID) && $new != $old && ($new == 'approved' || $old == 'approved'))
 		{
-			static::purgeCacheByPostIds($comment->comment_post_ID);
+			static::$instance->purgeCacheByPostIds($comment->comment_post_ID);
 		}
 	}
 
@@ -415,16 +404,14 @@ class Pub
 	{
 		if ($status == 1 && is_array($data) && !empty($data['comment_post_ID']))
 		{
-			static::purgeCacheByPostIds($data['comment_post_ID']);
+			static::$instance->purgeCacheByPostIds($data['comment_post_ID']);
 		}
 	}
 
-	public static function adminMenuBar($wp_admin_bar)
+	public function adminMenuBar($wp_admin_bar)
 	{
-		$cloudflareRepo = new \DigitalPoint\Cloudflare\Repository\Cloudflare();
-
 		// need CSS
-		if ($cloudflareRepo->option('cfPurgeCacheOnAdminBar'))
+		if ($this->cloudflareRepo->option('cfPurgeCacheOnAdminBar'))
 		{
 			$wp_admin_bar->add_node(array(
 				'id' => 'purge-cache',
@@ -492,8 +479,7 @@ class Pub
 	{
 		if($optionEnabled === null)
 		{
-			$cloudflareRepo = new \DigitalPoint\Cloudflare\Repository\Cloudflare();
-			$optionEnabled = $cloudflareRepo->option('cfImagesTransform');
+			$optionEnabled = $this->cloudflareRepo->option('cfImagesTransform');
 		}
 
 		if ($optionEnabled)
@@ -508,8 +494,7 @@ class Pub
 	{
 		if ($sources && is_array($sources))
 		{
-			$cloudflareRepo = new \DigitalPoint\Cloudflare\Repository\Cloudflare();
-			$optionEnabled = $cloudflareRepo->option('cfImagesTransform');
+			$optionEnabled = $this->cloudflareRepo->option('cfImagesTransform');
 
 			if ($optionEnabled)
 			{
@@ -525,6 +510,4 @@ class Pub
 
 		return $sources;
 	}
-
-
 }

@@ -18,7 +18,7 @@ class Admin
 	{
 		if (!static::$instance)
 		{
-			$class = __CLASS__;
+			$class = self::class;
 			static::$instance = new $class;
 
 			static::$instance->initHooks();

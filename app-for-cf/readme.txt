@@ -7,7 +7,7 @@ Tags: cloudflare, caching, performance, security, SEO
 Requires at least: 5.2
 Tested up to: 6.8
 Requires PHP: 5.4.0
-Stable tag: 1.9.4
+Stable tag: 1.9.4.1
 
 All things Cloudflare (caching, flexible SSL, Turnstile, settings, rules, analytics, media in R2, image transforms [AVIF, WebP], secure admin area).
 
@@ -215,6 +215,10 @@ Yes, please do! You can find the suggestion area [over here](https://appforcf.co
 29. For multisite networks, you can optionally use a single R2 bucket to store the media across all your sites.
 
 == Changelog ==
+= 1.9.4.1 (2025-07-03) =
+* Handle a situation where a third-party plugin is using a filter and turning a script or CSS URL into something unusable (not a string)
+* Limit preloaded resources to a maximum of 10
+
 = 1.9.4 (2025-07-01) =
 * Updated charting library (Chart.js) to 4.5.0
 * Simplified internal function for converting IPs to/from binary representations
