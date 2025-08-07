@@ -114,6 +114,8 @@ class Setup
 
 	protected static function uninstallAction()
 	{
+		wp_unschedule_hook('cfPurgeCache');
+
 		// Intentionally not deleting the settings so user doesn't need to reconfig later if they reactivate
 		// delete_option('app_for_cf');
 	}

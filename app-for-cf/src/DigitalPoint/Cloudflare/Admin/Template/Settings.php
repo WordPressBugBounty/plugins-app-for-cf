@@ -228,9 +228,10 @@ class Settings extends AbstractTemplate
         <tr class="group_setup tab_content">
             <th scope="row"><?php esc_html_e('API token', 'app-for-cf');?></th>
             <td>
-	            <?php printf('<a class="button button-primary alignright" href="%1$s" target="_blank"><span class="dashicons dashicons-rest-api"></span>%2$s</a>',
+	            <?php
+					printf('<a class="button button-primary alignright" href="%1$s" target="_blank"><span class="dashicons dashicons-rest-api"></span>%2$s</a>',
 		            @$appForCloudflareOptions['cloudflareAuth']['token'] ? esc_url('https://dash.cloudflare.com/profile/api-tokens') : esc_url('https://dash.cloudflare.com/profile/api-tokens?permissionGroupKeys=%5B%7B%22key%22%3A%22access%22%2C%22type%22%3A%22edit%22%7D%2C%7B%22key%22%3A%22access_acct%22%2C%22type%22%3A%22read%22%7D%2C%7B%22key%22%3A%22account_analytics%22%2C%22type%22%3A%22read%22%7D%2C%7B%22key%22%3A%22analytics%22%2C%22type%22%3A%22read%22%7D%2C%7B%22key%22%3A%22billing%22%2C%22type%22%3A%22read%22%7D%2C%7B%22key%22%3A%22request_tracer%22%2C%22type%22%3A%22read%22%7D%2C%7B%22key%22%3A%22intel%22%2C%22type%22%3A%22read%22%7D%2C%7B%22key%22%3A%22bot_management%22%2C%22type%22%3A%22edit%22%7D%2C%7B%22key%22%3A%22cache%22%2C%22type%22%3A%22purge%22%7D%2C%7B%22key%22%3A%22cache_settings%22%2C%22type%22%3A%22edit%22%7D%2C%7B%22key%22%3A%22challenge_widgets%22%2C%22type%22%3A%22edit%22%7D%2C%7B%22key%22%3A%22firewall_services%22%2C%22type%22%3A%22edit%22%7D%2C%7B%22key%22%3A%22page_rules%22%2C%22type%22%3A%22edit%22%7D%2C%7B%22key%22%3A%22ssl_and_certificates%22%2C%22type%22%3A%22edit%22%7D%2C%7B%22key%22%3A%22workers_r2%22%2C%22type%22%3A%22edit%22%7D%2C%7B%22key%22%3A%22workers_scripts%22%2C%22type%22%3A%22edit%22%7D%2C%7B%22key%22%3A%22zone%22%2C%22type%22%3A%22edit%22%7D%2C%7B%22key%22%3A%22zone_settings%22%2C%22type%22%3A%22edit%22%7D%2C%7B%22key%22%3A%22zone_waf%22%2C%22type%22%3A%22edit%22%7D%5D&name=WordPress'),
-		            esc_html__('API tokens', 'app-for-cf')
+					@$appForCloudflareOptions['cloudflareAuth']['token'] ? esc_html__('API tokens', 'app-for-cf') : esc_html__('Create API token', 'app-for-cf')
 	            ); ?>
 
 	            <?php printf('%s (<a href="%s" target="_blank">%s</a>):', esc_html__('Create a token for your zone(s) with the following permissions', 'app-for-cf'), esc_url(APP_FOR_CLOUDFLARE_PRODUCT_URL . 'threads/permissions-needed-for-app-for-cloudflare%C2%AE.3/?utm_source=permissions&utm_medium=wordpress&utm_campaign=plugin'), esc_html__('why', 'app-for-cf')); ?>

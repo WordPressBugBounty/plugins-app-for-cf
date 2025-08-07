@@ -7,7 +7,7 @@ Tags: cloudflare, caching, performance, security, SEO
 Requires at least: 5.2
 Tested up to: 6.8
 Requires PHP: 5.4.0
-Stable tag: 1.9.4.1
+Stable tag: 1.9.4.2
 
 All things Cloudflare (caching, flexible SSL, Turnstile, settings, rules, analytics, media in R2, image transforms [AVIF, WebP], secure admin area).
 
@@ -215,6 +215,14 @@ Yes, please do! You can find the suggestion area [over here](https://appforcf.co
 29. For multisite networks, you can optionally use a single R2 bucket to store the media across all your sites.
 
 == Changelog ==
+= 1.9.4.2 (2025-08-06) =
+* Made verbiage on button to create new API token a little more clear
+* Automatically purge old URL for a post if the slug or date was edited on an existing post
+* When purging the cache for attachments, don't assume the attachment URL is known (don't try to purge an invalid URL)
+* Don't try to schedule a cron task to purge URLs if the URLs are unknown
+* Delete any pending cron tasks for purging page caches if plugin is being deativated
+* Set cache control policy for JSON endpoints so guest page caching doesn't cache those requests
+
 = 1.9.4.1 (2025-07-03) =
 * Handle a situation where a third-party plugin is using a filter and turning a script or CSS URL into something unusable (not a string)
 * Limit preloaded resources to a maximum of 10

@@ -48,13 +48,13 @@ class Pub
 			if (
 				!empty($cloudflareAppInternal['v']) ||
 				strpos(@$_SERVER['SCRIPT_NAME'], '/plugins.php') !== false || /* @phpcs:ignore WordPress.Security.ValidatedSanitizedInput.InputNotValidated, WordPress.Security.ValidatedSanitizedInput.MissingUnslash, WordPress.Security.ValidatedSanitizedInput.InputNotSanitized */
-				array_search($class, [
+				in_array($class, [
 					'DigitalPoint\Cloudflare\Helper\Api',
 
 					'DigitalPoint\Cloudflare\Api\Advanced',
 					'DigitalPoint\Cloudflare\Base\PubAdvanced',
 					'DigitalPoint\Cloudflare\Repository\Advanced\Cloudflare'
-				]) !== false
+				])
 			)
 			{
 				include $proLocation . $filename;
@@ -98,6 +98,7 @@ class Pub
 		}
 
 		add_filter('wp_headers', [$this, 'handleHeaders'], 9999999);
+		add_filter('rest_post_dispatch', [$this, 'filterRestPostDispatch'], 1048576, 3);
 
 		$purgeEverythingActions = [
 			'autoptimize_action_cachepurged',	// Compat with https://wordpress.org/plugins/autoptimize
@@ -114,22 +115,24 @@ class Pub
 
 		$cloudflarePurgeActions = [
 			'delete_attachment',
-			'deleted_post',
+			'deleted_post'
 		];
 		// Same as above... Going to use the same filter name as the main Cloudflare plugin since we are literally doing the exact same thing.
 		// Don't force third-party devs to do it twice.
 		$cloudflarePurgeActions = apply_filters('cloudflare_purge_url_actions', $cloudflarePurgeActions);
 		foreach ($cloudflarePurgeActions as $action)
 		{
-			add_action($action, array($this, 'purgeCacheByPostIds'), 1048576);
+			add_action($action, [$this, 'purgeCacheByPostIds'], 1048576);
 		}
 
+		add_action('post_updated', [$this, 'purgeCacheByPostIds'], 1048576, 3);
+
 		// Pick up if a post changed to/from 'publish'
-		add_action('transition_post_status', array($this, 'purgeCacheOnPostStatusChange'), 1048576, 3);
+		add_action('transition_post_status', [$this, 'purgeCacheOnPostStatusChange'], 1048576, 3);
 
 		// Handle comments
-		add_action('transition_comment_status', array($this, 'purgeCacheOnCommentStatusChange'), 1048576, 3);
-		add_action('comment_post', array($this, 'purgeCacheOnNewComment'), 1048576, 3);
+		add_action('transition_comment_status', [$this, 'purgeCacheOnCommentStatusChange'], 1048576, 3);
+		add_action('comment_post', [$this, 'purgeCacheOnNewComment'], 1048576, 3);
 
 		add_action('admin_bar_menu', [$this, 'adminMenuBar'], 100);
 
@@ -192,7 +195,7 @@ class Pub
 
 		$cloudflareAppOptions = $this->cloudflareRepo->option(null);
 
-		$cacheTime = intval(@$cloudflareAppOptions['cfPageCachingSeconds']);
+		$cacheTime = (int)@$cloudflareAppOptions['cfPageCachingSeconds'];
 
 		if (!$noCache &&
 			$cacheTime > 0 &&
@@ -201,7 +204,7 @@ class Pub
 			(!defined('WP_DEBUG') || !WP_DEBUG)
 		)
 		{
-			$cacheTime = intval(@$cloudflareAppOptions['cfPageCachingSeconds']);
+			$cacheTime = (int)@$cloudflareAppOptions['cfPageCachingSeconds'];
 
 			$headers['Cache-Control'] = 'max-age=0,s-maxage=' . $cacheTime;
 		}
@@ -240,13 +243,14 @@ class Pub
 		$this->cloudflareRepo->purgeCache();
 	}
 
-	public function purgeCacheByPostIds($postIds)
+	public function purgeCacheByPostIds($postIds, $postAfter = null, $postBefore = null)
 	{
 		$postIds = (array)$postIds;
 		$urls = [];
 		foreach ($postIds as $postId)
 		{
 			$post = get_post($postId);
+
 			$postType = get_post_type($postId);
 
 			if (wp_is_post_autosave($postId) ||
@@ -270,6 +274,17 @@ class Pub
 			// Post
 			$postLink = get_permalink($postId);
 			$urls[] = $postLink;
+
+			// Slug or date was edited
+			if ($postBefore && $postAfter && (
+					($postBefore->post_name && $postAfter->post_name && $postBefore->post_name !== $postAfter->post_name)
+				||
+					($postBefore->post_date && $postAfter->post_date && $postBefore->post_date !== $postAfter->post_date)
+				)
+			)
+			{
+				$urls[] = get_permalink($postBefore);
+			}
 
 			// Maybe trashed?
 			if (get_post_status($postId) == 'trash')
@@ -355,7 +370,7 @@ class Pub
 				foreach (get_intermediate_image_sizes() as $size)
 				{
 					$imageSrc = wp_get_attachment_image_src($postId, $size);
-					if (!empty($imageSrc) && is_array($imageSrc))
+					if (!empty($imageSrc) && is_array($imageSrc) && !empty($imageSrc[0]))
 					{
 						$urls[] = $imageSrc[0];
 					}
@@ -366,21 +381,24 @@ class Pub
 		$urls = apply_filters('cloudflare_purge_by_url', $urls, $postId);
 		$urls = array_values(array_unique(array_filter($urls)));
 
-		if (defined('DISABLE_WP_CRON') && DISABLE_WP_CRON)
+		if ($urls)
 		{
-			$chunks = array_chunk($urls, 30);
-
-			foreach ($chunks as $chunk)
+			if (defined('DISABLE_WP_CRON') && DISABLE_WP_CRON)
 			{
-				if (!$this->cloudflareRepo->purgeCache(['files' => $chunk]))
+				$chunks = array_chunk($urls, 30);
+
+				foreach ($chunks as $chunk)
 				{
-					break;
+					if (!$this->cloudflareRepo->purgeCache(['files' => $chunk]))
+					{
+						break;
+					}
 				}
 			}
-		}
-		elseif (!wp_next_scheduled('cfPurgeCache', ['urls' => $urls]))
-		{
-			wp_schedule_single_event(time(), 'cfPurgeCache', ['urls' => $urls]);
+			elseif (!wp_next_scheduled('cfPurgeCache', ['urls' => $urls]))
+			{
+				wp_schedule_single_event(time(), 'cfPurgeCache', ['urls' => $urls]);
+			}
 		}
 	}
 
@@ -413,12 +431,12 @@ class Pub
 		// need CSS
 		if ($this->cloudflareRepo->option('cfPurgeCacheOnAdminBar'))
 		{
-			$wp_admin_bar->add_node(array(
+			$wp_admin_bar->add_node([
 				'id' => 'purge-cache',
 				'title' => '<span class="ab-icon" aria-hidden="true"></span><span class="ab-label">' . esc_html__('Purge cache', 'app-for-cf') . '</span>',
 				'href' => admin_url('admin.php?page=app-for-cf_cache'),
-				'meta' => array('target' => '_blank')
-			));
+				'meta' => ['target' => '_blank']
+			]);
 
 			echo '<style>
 			#wpadminbar #wp-admin-bar-purge-cache .ab-icon:before {
@@ -509,5 +527,12 @@ class Pub
 		}
 
 		return $sources;
+	}
+
+
+	public function filterRestPostDispatch($response, $server, $request)
+	{
+		$response->header('Cache-Control', 'private, no-cache, must-revalidate', true);
+		return $response;
 	}
 }
