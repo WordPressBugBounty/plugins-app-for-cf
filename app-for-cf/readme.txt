@@ -7,7 +7,7 @@ Tags: cloudflare, caching, performance, security, SEO
 Requires at least: 5.2
 Tested up to: 6.8
 Requires PHP: 5.4.0
-Stable tag: 1.9.4.2
+Stable tag: 1.9.4.3
 
 All things Cloudflare (caching, flexible SSL, Turnstile, settings, rules, analytics, media in R2, image transforms [AVIF, WebP], secure admin area).
 
@@ -31,7 +31,7 @@ Unlock advanced Cloudflare features without being a network administrator or dev
 
 **Directly cache HTML**
 
-App for Cloudflare® can automatically cache your HTML pages in 330+ Cloudflare data centers around the world. "Standard" WordPress caching plugins can’t escape the laws of physics because **information can't travel faster than the speed of light** (even if the page is cached, the cache exists on your physical origin server, which can be **over 20,000 km from an end user**). Caching content in Cloudflare data centers makes your website faster by putting your website cache closer to end-users (95% of the world's population is within 50ms of a Cloudflare data center).
+App for Cloudflare® can automatically cache your HTML pages at Cloudflare data centers in 330+ cities. "Standard" WordPress caching plugins can’t escape the laws of physics because **information can't travel faster than the speed of light** (even if the page is cached, the cache exists on your physical origin server, which can be **over 20,000 km from an end user**). Caching content in Cloudflare data centers makes your website faster by putting your website cache closer to end-users (95% of the world's population is within 50ms of a Cloudflare data center).
 
 This can be done **without Cloudflare Workers or even a Page Rule** (done with a single Cache Rule on Cloudflare's side, and custom code in the plugin).
 
@@ -215,6 +215,12 @@ Yes, please do! You can find the suggestion area [over here](https://appforcf.co
 29. For multisite networks, you can optionally use a single R2 bucket to store the media across all your sites.
 
 == Changelog ==
+= 1.9.4.3 (2025-08-25) =
+* Purging non-pretty post URLs even if pretty URLs are setup (handles permalinks being different based on the post status)
+* Prioritize resources to be preloaded appropriately if third-party plugins use the wp_preload_resources hook to call specific resources out for preloading
+* Fixed an issue that would prevent scheduled events from working in certain versions of PHP
+* The backend mechanism for purging URLs from cache is more efficient
+
 = 1.9.4.2 (2025-08-06) =
 * Made verbiage on button to create new API token a little more clear
 * Automatically purge old URL for a post if the slug or date was edited on an existing post

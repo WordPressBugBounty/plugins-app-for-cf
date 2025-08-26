@@ -45,18 +45,18 @@ trait WP
 	{
 		//See: https://developer.wordpress.org/reference/functions/wp_schedule_single_event/
 		$split = explode('_', $jobKey);
-		if (wp_next_scheduled($split[0], ['id' => $split[1]]))
+		if (wp_next_scheduled($split[0], [$split[1]]))
 		{
 			$this->cancelCron($jobKey);
 		}
-		wp_schedule_single_event(time() + (86400 * $expireDays), $split[0], ['id' => $split[1]]);
+		wp_schedule_single_event(time() + (86400 * $expireDays), $split[0], [$split[1]]);
 	}
 
 	protected function cancelCron($jobKey)
 	{
 		//See: https://developer.wordpress.org/reference/functions/wp_clear_scheduled_hook/
 		$split = explode('_', $jobKey);
-		wp_clear_scheduled_hook($split[0], ['id' => $split[1]]);
+		wp_clear_scheduled_hook($split[0], [$split[1]]);
 	}
 
 	public function verifyTurnstileResponse($response)

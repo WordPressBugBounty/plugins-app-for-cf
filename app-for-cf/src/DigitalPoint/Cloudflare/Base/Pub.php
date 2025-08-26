@@ -6,6 +6,7 @@ class Pub
 	protected static $instance;
 
 	protected $preload = [];
+	protected $purgeUrls = [];
 	protected $cloudflareRepo = null;
 
 	/**
@@ -95,6 +96,8 @@ class Pub
 			add_filter('style_loader_tag', [$this, 'handleStyleLoaderTag'], 9999999, 3);
 
 			add_action('wp_print_footer_scripts', [$this, 'handlePrintFooterScripts'], 9999999);
+
+			add_filter('wp_preload_resources', [$this, 'filterPreloadResources'], 9999999);
 		}
 
 		add_filter('wp_headers', [$this, 'handleHeaders'], 9999999);
@@ -140,6 +143,8 @@ class Pub
 
 		add_filter('wp_get_attachment_url', [$this, 'filterWpGetAttachmentUrl'], 1048576, 2);
 		add_filter('wp_calculate_image_srcset', [$this, 'filterWpCalculateImageSrcset'], 1048576, 5);
+
+		add_action('shutdown', [$this, 'shutdown']);
 
 		$turnstileOptions = $this->cloudflareRepo->option('cfTurnstile');
 		if (!empty($turnstileOptions['siteKey']) && !empty($turnstileOptions['secretKey']))
@@ -238,6 +243,33 @@ class Pub
 		}
 	}
 
+	public function filterPreloadResources($preloadResources)
+	{
+		if (is_array($preloadResources))
+		{
+			foreach ($preloadResources as $resource)
+			{
+				if(!empty($resource['href']) && !empty($resource['as']))
+				{
+					$preload = '<' . sanitize_url($resource['href']) . '>;as=' . esc_attr($resource['as']) . ';rel=preload';
+
+					if (empty($this->preload[$preload]))
+					{
+						if (!empty($resource['fetchpriority']) && $resource['fetchpriority'] === 'high')
+						{
+							$this->preload = [$preload => true] + $this->preload;
+						}
+						else
+						{
+							$this->preload[$preload] = true;
+						}
+					}
+				}
+			}
+		}
+		return $preloadResources;
+	}
+
 	public function purgeCacheEverything()
 	{
 		$this->cloudflareRepo->purgeCache();
@@ -246,7 +278,6 @@ class Pub
 	public function purgeCacheByPostIds($postIds, $postAfter = null, $postBefore = null)
 	{
 		$postIds = (array)$postIds;
-		$urls = [];
 		foreach ($postIds as $postId)
 		{
 			$post = get_post($postId);
@@ -269,34 +300,29 @@ class Pub
 			}
 
 			// Home
-			$urls[] = home_url() . '/';
+			$this->purgeUrls[] = home_url() . '/';
 
 			// Post
 			$postLink = get_permalink($postId);
-			$urls[] = $postLink;
+			$this->purgeUrls[] = $postLink;
 
-			// Slug or date was edited
-			if ($postBefore && $postAfter && (
-					($postBefore->post_name && $postAfter->post_name && $postBefore->post_name !== $postAfter->post_name)
-				||
-					($postBefore->post_date && $postAfter->post_date && $postBefore->post_date !== $postAfter->post_date)
-				)
-			)
+			// Possible that date or status was changed
+			if ($postBefore)
 			{
-				$urls[] = get_permalink($postBefore);
+				$this->purgeUrls[] = get_permalink($postBefore);
 			}
 
 			// Maybe trashed?
-			if (get_post_status($postId) == 'trash')
+			if (get_post_status($postId) === 'trash')
 			{
 				$oldPost = str_replace('__trashed', '', $postLink);
-				$urls[] = $oldPost;
-				$urls[] = $oldPost . 'feed/';
+				$this->purgeUrls[] = $oldPost;
+				$this->purgeUrls[] = $oldPost . 'feed/';
 			}
 
 			// Author
-			$urls[] = get_author_posts_url($post->post_author);
-			$urls[] = get_author_feed_link($post->post_author);
+			$this->purgeUrls[] = get_author_posts_url($post->post_author);
+			$this->purgeUrls[] = get_author_feed_link($post->post_author);
 
 			// Categories
 			foreach (get_object_taxonomies($postType) as $taxonomy)
@@ -321,8 +347,8 @@ class Pub
 					$termFeedLink = get_term_feed_link($term->term_id, $term->taxonomy);
 					if (!is_wp_error($termLink) && !is_wp_error($termFeedLink))
 					{
-						$urls[] = $termLink;
-						$urls[] = $termFeedLink;
+						$this->purgeUrls[] = $termLink;
+						$this->purgeUrls[] = $termFeedLink;
 					}
 				}
 			}
@@ -332,25 +358,25 @@ class Pub
 			{
 				if ($archive != home_url())
 				{
-					$urls[] = $archive;
+					$this->purgeUrls[] = $archive;
 				}
-				$urls[] = get_post_type_archive_feed_link($postType);
+				$this->purgeUrls[] = get_post_type_archive_feed_link($postType);
 			}
 
 			//Feeds
-			$urls[] = get_bloginfo_rss('atom_url');
-			$urls[] = get_bloginfo_rss('rdf_url');
-			$urls[] = get_bloginfo_rss('rss_url');
-			$urls[] = get_bloginfo_rss('rss2_url');
-			$urls[] = get_bloginfo_rss('comments_atom_url');
-			$urls[] = get_bloginfo_rss('comments_rss2_url');
+			$this->purgeUrls[] = get_bloginfo_rss('atom_url');
+			$this->purgeUrls[] = get_bloginfo_rss('rdf_url');
+			$this->purgeUrls[] = get_bloginfo_rss('rss_url');
+			$this->purgeUrls[] = get_bloginfo_rss('rss2_url');
+			$this->purgeUrls[] = get_bloginfo_rss('comments_atom_url');
+			$this->purgeUrls[] = get_bloginfo_rss('comments_rss2_url');
 
 			// Page for posts
 			if ($pageForPosts = get_permalink(get_option('page_for_posts')))
 			{
 				if (is_string($pageForPosts))
 				{
-					$urls[] = $pageForPosts;
+					$this->purgeUrls[] = $pageForPosts;
 				}
 			}
 
@@ -361,7 +387,7 @@ class Pub
 			// Limit to up to 5 pages... first one *probably* shouldn't be used, but let's be safe.
 			foreach (range(1, min(5, ceil($totalPosts / $perPage))) as $page)
 			{
-				$urls[] = home_url(sprintf('/page/%s/', $page));
+				$this->purgeUrls[] = home_url(sprintf('/page/%s/', $page));
 			}
 
 			// Attachments
@@ -372,39 +398,18 @@ class Pub
 					$imageSrc = wp_get_attachment_image_src($postId, $size);
 					if (!empty($imageSrc) && is_array($imageSrc) && !empty($imageSrc[0]))
 					{
-						$urls[] = $imageSrc[0];
+						$this->purgeUrls[] = $imageSrc[0];
 					}
 				}
 			}
 		}
 
-		$urls = apply_filters('cloudflare_purge_by_url', $urls, $postId);
-		$urls = array_values(array_unique(array_filter($urls)));
-
-		if ($urls)
-		{
-			if (defined('DISABLE_WP_CRON') && DISABLE_WP_CRON)
-			{
-				$chunks = array_chunk($urls, 30);
-
-				foreach ($chunks as $chunk)
-				{
-					if (!$this->cloudflareRepo->purgeCache(['files' => $chunk]))
-					{
-						break;
-					}
-				}
-			}
-			elseif (!wp_next_scheduled('cfPurgeCache', ['urls' => $urls]))
-			{
-				wp_schedule_single_event(time(), 'cfPurgeCache', ['urls' => $urls]);
-			}
-		}
+		$this->purgeUrls = apply_filters('cloudflare_purge_by_url', $this->purgeUrls, $postId);
 	}
 
 	public static function purgeCacheOnPostStatusChange($new, $old, $post)
 	{
-		if ($new == 'publish' || $old == 'publish')
+		if ($new === 'publish' || $old === 'publish')
 		{
 			static::$instance->purgeCacheByPostIds($post->ID);
 		}
@@ -417,6 +422,34 @@ class Pub
 			static::$instance->purgeCacheByPostIds($comment->comment_post_ID);
 		}
 	}
+
+	public function shutdown()
+	{
+		if ($this->purgeUrls)
+		{
+			$this->purgeUrls = array_values(array_unique(array_filter($this->purgeUrls)));
+
+			if (defined('DISABLE_WP_CRON') && DISABLE_WP_CRON)
+			{
+				$chunks = array_chunk($this->purgeUrls, 30);
+
+				foreach ($chunks as $chunk)
+				{
+					if (!$this->cloudflareRepo->purgeCache(['files' => $chunk]))
+					{
+						break;
+					}
+				}
+			}
+			elseif (!wp_next_scheduled('cfPurgeCache', [$this->purgeUrls]))
+			{
+				wp_schedule_single_event(time(), 'cfPurgeCache', [$this->purgeUrls]);
+			}
+		}
+
+
+	}
+
 
 	public static function purgeCacheOnNewComment($commentId, $status, $data)
 	{
@@ -528,7 +561,6 @@ class Pub
 
 		return $sources;
 	}
-
 
 	public function filterRestPostDispatch($response, $server, $request)
 	{
