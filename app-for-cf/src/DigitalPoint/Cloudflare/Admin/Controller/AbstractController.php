@@ -77,7 +77,7 @@ class AbstractController
 			case 'uint':
 				if (!empty($_REQUEST[$key])) /* @phpcs:ignore WordPress.Security.NonceVerification.Recommended */
 				{
-					$value = intval(wp_unslash($_REQUEST[$key])); /* @phpcs:ignore WordPress.Security.NonceVerification.Recommended */
+					$value = (int)wp_unslash($_REQUEST[$key]); /* @phpcs:ignore WordPress.Security.NonceVerification.Recommended, WordPress.Security.ValidatedSanitizedInput.InputNotSanitized */
 					if ($value < 0)
 					{
 						$value = 0;

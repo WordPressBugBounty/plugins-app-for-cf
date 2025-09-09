@@ -40,6 +40,15 @@ class Setup
 				'onLogin' => 0,
 				'onPassword' => 0,
 				'onComment' => 0,
+				'onContactForm7' => 0,
+				'onHtmlForms' => 0,
+				'onMetForm' => 0,
+				'onWPForms' => 0,
+				'onWooCommerceRegister' => 0,
+				'onWooCommerceLogin' => 0,
+				'onWooCommercePassword' => 0,
+	//			'onWooCommerceCheckout' => 0,
+	//			'onWooCommercePay' => 0,
 			]
 		];
 	}

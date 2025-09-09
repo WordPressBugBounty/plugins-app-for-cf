@@ -1,5 +1,8 @@
 <?php
 namespace DigitalPoint\Cloudflare\Admin\Template;
+
+use DigitalPoint\Cloudflare\Helper\WordPress;
+
 class Settings extends AbstractTemplate
 {
     use \DigitalPoint\Cloudflare\Traits\WP;
@@ -464,15 +467,63 @@ class Settings extends AbstractTemplate
 								value="<?php echo esc_attr(@$appForCloudflareOptions['cfTurnstile']['secretKey']); ?>"<?php disabled(true, empty(@$appForCloudflareOptions['cfTurnstile']['siteKey'])); ?>/>
 						</label>
 
-						<label>
+						<div>
 							<?php esc_html_e('For:', 'app-for-cf');?>
-						</label>
-							<div class="dependent">
-								<label><input form="settingsForm" type="checkbox" class="primary" value="1" name="app_for_cf[cfTurnstile][onRegister]"<?php echo esc_attr(trim(' ' . (!empty(@$appForCloudflareOptions['cfTurnstile']['onRegister']) ? ' checked' : '') . ' ' . disabled(true, empty(@$appForCloudflareOptions['cfTurnstile']['siteKey']), false))) ?>><?php esc_html_e('Registration', 'app-for-cf') ?></label>
-								<label><input form="settingsForm" type="checkbox" class="primary" value="1" name="app_for_cf[cfTurnstile][onLogin]"<?php echo esc_attr(trim(' ' . (!empty(@$appForCloudflareOptions['cfTurnstile']['onLogin']) ? ' checked' : '') . ' ' . disabled(true, empty(@$appForCloudflareOptions['cfTurnstile']['siteKey']), false))) ?>><?php esc_html_e('Login', 'app-for-cf') ?></label>
-								<label><input form="settingsForm" type="checkbox" class="primary" value="1" name="app_for_cf[cfTurnstile][onPassword]"<?php echo esc_attr(trim(' ' . (!empty(@$appForCloudflareOptions['cfTurnstile']['onPassword']) ? ' checked' : '') . ' ' . disabled(true, empty(@$appForCloudflareOptions['cfTurnstile']['siteKey']), false))) ?>><?php esc_html_e('Password reset', 'app-for-cf') ?></label>
-								<label><input form="settingsForm" type="checkbox" class="primary" value="1" name="app_for_cf[cfTurnstile][onComment]"<?php echo esc_attr(trim(' ' . (!empty(@$appForCloudflareOptions['cfTurnstile']['onComment']) ? ' checked' : '') . ' ' . disabled(true, empty(@$appForCloudflareOptions['cfTurnstile']['siteKey']), false))) ?>><?php esc_html_e('Comment') /* @phpcs:ignore WordPress.WP.I18n.MissingArgDomain */ ?></label>
-							</div>
+						</div>
+
+						<?php
+
+							echo '<style>
+.turnstileFor {
+	display:flex;
+}
+.turnstileFor > div {
+	padding:0 15px 5px 0;
+}
+.turnstileFor > div > div {
+	margin:0 0 10px 10px;
+	font-weight:bold;
+}
+</style>';
+
+							$turnstileFor = [
+								__('WordPress') => [ /* @phpcs:ignore WordPress.WP.I18n.MissingArgDomain */
+									'onRegister' => __('Registration', 'app-for-cf'),
+									'onLogin' => __('Login', 'app-for-cf'),
+									'onPassword' => __('Password reset', 'app-for-cf'),
+									'onComment' => __('Comment') /* @phpcs:ignore WordPress.WP.I18n.MissingArgDomain */
+								],
+								__('WooCommerce', 'woocommerce') => [ /* @phpcs:ignore WordPress.WP.I18n.TextDomainMismatch */
+									'onWooCommerceRegister' => __('Registration', 'app-for-cf'),
+									'onWooCommerceLogin' => __('Login', 'app-for-cf'),
+									'onWooCommercePassword' => __('Password reset', 'app-for-cf'),
+							//		'onWooCommerceCheckout' => __('Checkout', 'woocommerce'), /* @phpcs:ignore WordPress.WP.I18n.TextDomainMismatch */
+							//		'onWooCommercePay' => __('Pay', 'woocommerce'), /* @phpcs:ignore WordPress.WP.I18n.TextDomainMismatch */
+								],
+								__('Contact forms', 'app-for-cf') => [
+									'onContactForm7' => __('Contact Form 7', 'contact-form-7'), /* @phpcs:ignore WordPress.WP.I18n.TextDomainMismatch */
+									'onHtmlForms' => __('HTML Forms', 'html-forms'), /* @phpcs:ignore WordPress.WP.I18n.TextDomainMismatch */
+									'onMetForm' => __('MetForm', 'metform'), /* @phpcs:ignore WordPress.WP.I18n.TextDomainMismatch */
+									'onWPForms' => __('WPForms', 'wpforms-lite'), /* @phpcs:ignore WordPress.WP.I18n.TextDomainMismatch */
+
+								]
+							];
+
+							$turnstileFor = apply_filters('app_for_cf_turnstile_forms', $turnstileFor);
+
+							echo '<div class="dependent turnstileFor">';
+							foreach ($turnstileFor as $category => $options)
+							{
+								echo '<div>';
+								echo '<div>' . esc_html($category) . '</div>';
+								foreach ($options as $option => $label)
+								{
+									echo '<label><input form="settingsForm" type="checkbox" class="primary" value="1" name="app_for_cf[cfTurnstile][' . esc_attr($option) . ']"' . esc_attr(' ' . trim((!empty(@$appForCloudflareOptions['cfTurnstile'][$option]) ? ' checked' : '') . ' ' . disabled(true, empty(@$appForCloudflareOptions['cfTurnstile']['siteKey']), false))) . '>' . esc_html($label) . '</label>';
+								}
+								echo '</div>';
+							}
+							echo '</div>';
+						?>
 					</div>
 				</div>
 			</td>
@@ -485,11 +536,11 @@ class Settings extends AbstractTemplate
 
 		<tr class="group_setup tab_content">
 			<th scope="row"><?php esc_html_e('Block spammer IPs', 'app-for-cf');?></th>
-			<td<?php echo (!intval(@$cloudflareAppInternal) ? ' class="pro"' : ''); ?>>
+			<td<?php echo (!(int)@$cloudflareAppInternal ? ' class="pro"' : ''); ?>>
 
                 <label for="cf-app_cloudflareBlockIpsSpamClean">
                     <input type="hidden" name="app_for_cf[cloudflareBlockIpsSpamClean]" form="settingsForm" value="0">
-                    <input name="app_for_cf[cloudflareBlockIpsSpamClean]" type="checkbox" id="cf-app_cloudflareBlockIpsSpamClean" form="settingsForm" value="1" <?php checked('1', empty($appForCloudflareOptions['cloudflareBlockIpsSpamClean']) ? false : $appForCloudflareOptions['cloudflareBlockIpsSpamClean'] ); disabled(0, intval(@$cloudflareAppInternal)); ?>>
+                    <input name="app_for_cf[cloudflareBlockIpsSpamClean]" type="checkbox" id="cf-app_cloudflareBlockIpsSpamClean" form="settingsForm" value="1" <?php checked('1', empty($appForCloudflareOptions['cloudflareBlockIpsSpamClean']) ? false : $appForCloudflareOptions['cloudflareBlockIpsSpamClean'] ); disabled(0, (int)@$cloudflareAppInternal); ?>>
 					<?php
 					    esc_html_e('Block IP address on spam flag in comment queue', 'app-for-cf');
 					?>
@@ -502,18 +553,18 @@ class Settings extends AbstractTemplate
                        id="cf-app_cloudflareFirewallExpireDays"
                        form="settingsForm"
                        min="1" max="90" step="1"
-                       value="<?php echo esc_attr(@$appForCloudflareOptions['cloudflareFirewallExpireDays']); ?>"<?php disabled(0, intval(@$cloudflareAppInternal)); ?>/>
+                       value="<?php echo esc_attr(@$appForCloudflareOptions['cloudflareFirewallExpireDays']); ?>"<?php disabled(0, (int)@$cloudflareAppInternal); ?>/>
                 <div class="explain"><?php esc_html_e('For automatically created firewall rules (for example blocking the IP addresses of spammers), this is the number of days until the firewall rule expires.', 'app-for-cf');?></div>
 			</td>
 		</tr>
 
         <tr class="group_setup tab_content">
             <th scope="row"><?php esc_html_e('External data URL', 'app-for-cf');?></th>
-            <td<?php echo (!intval(@$cloudflareAppInternal) ? ' class="pro"' : ''); ?>>
+            <td<?php echo (!(int)@$cloudflareAppInternal ? ' class="pro"' : ''); ?>>
                 <input type="text" name="app_for_cf[cfExternalDataUrl]" id="cf-app_cloudflareExternalDataUrl"
                        form="settingsForm"
                        style="width: 90%;"
-                       value="<?php echo esc_attr(@$appForCloudflareOptions['cfExternalDataUrl']); ?>"<?php disabled(0, intval(@$cloudflareAppInternal)); ?>/>
+                       value="<?php echo esc_attr(@$appForCloudflareOptions['cfExternalDataUrl']); ?>"<?php disabled(0, (int)@$cloudflareAppInternal); ?>/>
                 <div class="explain"><?php
 	                /* translators: %1$s = <a href=...>, %2$s = </a> */
 	                printf(esc_html__('This is the URL where your media is stored. Normally you don\'t need to edit this (it\'s automatically created and set when you %1$senable R2 storage for your media%2$s).', 'app-for-cf'), \DigitalPoint\Cloudflare\Helper\Api::$version ? '<a href="' . esc_url_raw(menu_page_url('app-for-cf_r2', false)) . '">' : '', \DigitalPoint\Cloudflare\Helper\Api::$version ? '</a>' : '');?></div>
@@ -524,11 +575,11 @@ class Settings extends AbstractTemplate
 
         <tr class="group_setup tab_content">
             <th scope="row"></th>
-            <td<?php echo (!intval(@$cloudflareAppInternal) ? ' class="pro"' : ''); ?>>
+            <td<?php echo (!(int)@$cloudflareAppInternal ? ' class="pro"' : ''); ?>>
 
                 <div data-init="dependent">
                     <input type="hidden" name="app_for_cf[cfWebpCompression]" form="settingsForm" value="0">
-                    <label><input form="settingsForm" type="checkbox" class="primary" value="0" <?php echo (@$appForCloudflareOptions['cfWebpCompression'] ? ' checked' : '') . disabled(0, intval(@$cloudflareAppInternal)) ?>><?php esc_html_e('Convert uploaded media to WebP', 'app-for-cf') ?></label>
+                    <label><input form="settingsForm" type="checkbox" class="primary" value="0" <?php echo (@$appForCloudflareOptions['cfWebpCompression'] ? ' checked' : '') . disabled(0, (int)@$cloudflareAppInternal) ?>><?php esc_html_e('Convert uploaded media to WebP', 'app-for-cf') ?></label>
                     <div class="dependent">
 	                    <?php esc_html_e('Compression level:', 'app-for-cf');?>
                         <input type="number" name="app_for_cf[cfWebpCompression]" id="cf-app_cloudflareWebpCompression"
@@ -537,7 +588,7 @@ class Settings extends AbstractTemplate
                                min="10"
                                max="100"
                                <?php echo @$appForCloudflareOptions['cfWebpCompression'] ? '' : 'disabled' ?>
-                               value="<?php echo esc_attr(@$appForCloudflareOptions['cfWebpCompression'] ?: 80); ?>"<?php disabled(0, intval(@$cloudflareAppInternal)); ?>/>
+                               value="<?php echo esc_attr(@$appForCloudflareOptions['cfWebpCompression'] ?: 80); ?>"<?php disabled(0, (int)@$cloudflareAppInternal); ?>/>
 
                         <div class="explain"><?php
 	                        esc_html_e('If your server supports ImageMagick or GD with WebP, you can convert PNG and JPG images to WebP automatically when they are uploaded as media.', 'app-for-cf');
@@ -575,7 +626,7 @@ class Settings extends AbstractTemplate
 					}
 
 					/* translators: %1$s = <a href=...>, %2$s = </a> */
-					printf(esc_html__('Make sure you have %1$simage transformations%2$s enabled for your Cloudflare zone.', 'app-for-cf'), '<a href="' . esc_url($url) . '" target="_blank">', '</a>');
+					printf(esc_html__('Enabling this option will enable %1$simage transformations%2$s for your Cloudflare zone.', 'app-for-cf'), '<a href="' . esc_url($url) . '" target="_blank">', '</a>');
 
 					?></div>
 			</td>

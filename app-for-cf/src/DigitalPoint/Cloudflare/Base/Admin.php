@@ -1,6 +1,8 @@
 <?php
 
 namespace DigitalPoint\Cloudflare\Base;
+use DigitalPoint\Cloudflare\Admin\View\AbstractView;
+
 class Admin
 {
 	use \DigitalPoint\Cloudflare\Traits\WP;
@@ -644,7 +646,7 @@ class Admin
 
 		if (!class_exists($className))
 		{
-			$className = '\DigitalPoint\Cloudflare\Admin\View\AbstractView';
+			$className = AbstractView::class;
 		}
 
 		$viewClass = new $className($name, $params);

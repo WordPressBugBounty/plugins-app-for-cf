@@ -216,6 +216,15 @@ class Cloudflare extends Advanced\Cloudflare
 			];
 
 			wp_send_json($return);
+
+			/*
+			 * 		if (!empty($appForCloudflareOptions['cfImagesTransform']))
+		{
+
+		}
+			 */
+
+
 		}
 
 		$viewParams = [];
@@ -319,7 +328,7 @@ class Cloudflare extends Advanced\Cloudflare
 								}
 								elseif($setting['defaults']['data_type'][$key][$subKey] == 'int')
 								{
-									$newValue[$key][$subKey] = intval($newValue[$key][$subKey]);
+									$newValue[$key][$subKey] = (int)$newValue[$key][$subKey];
 								}
 							}
 
@@ -345,7 +354,7 @@ class Cloudflare extends Advanced\Cloudflare
 						}
 						elseif($setting['defaults']['data_type'] == 'int')
 						{
-							$newValue = intval($newValue);
+							$newValue = (int)$newValue;
 
 							// This is for origin_max_http_version (a toggle with possible values of 1 or 2)
 							if (!empty($setting['defaults']['good']) && $setting['defaults']['good'] == 2)
@@ -353,7 +362,7 @@ class Cloudflare extends Advanced\Cloudflare
 								$newValue++;
 								if (is_string($setting['defaults']['good']))
 								{
-									$newValue = strval($newValue);
+									$newValue = (string)$newValue;
 								}
 							}
 						}

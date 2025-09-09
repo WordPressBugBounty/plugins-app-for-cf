@@ -4,6 +4,8 @@ namespace DigitalPoint\Cloudflare\Turnstile;
 
 class WordPress extends AbstractTurnstile
 {
+	protected $verifyRan = false;
+
 	protected function initHooks()
 	{
 		if (!empty($this->turnstileOptions['onRegister']) || !empty($this->turnstileOptions['onLogin']) || !empty($this->turnstileOptions['onPassword']))
@@ -47,6 +49,13 @@ class WordPress extends AbstractTurnstile
 
 	public function registrationErrors($errors, $sanitized_user_login, $user_email)
 	{
+		if ($this->verifyRan)
+		{
+			return $errors;
+		}
+
+		$this->verifyRan = true;
+
 		if ($this->isXmlRest() || empty($sanitized_user_login))
 		{
 			return $errors;
@@ -109,10 +118,20 @@ class WordPress extends AbstractTurnstile
 
 	public function authenticate($user)
 	{
+		if ($this->verifyRan)
+		{
+			return $user;
+		}
+
+		$this->verifyRan = true;
+
 		if (
 			$this->isXmlRest() ||
 			(empty($user) || empty($user->ID)) ||
-			empty($_POST['log']) /* @phpcs:ignore WordPress.Security.NonceVerification.Missing */
+			(
+				empty($_POST['log']) && /* WordPress core */ /* @phpcs:ignore WordPress.Security.NonceVerification.Missing */
+				empty($_POST['username']) /* WooCommerce */ /* @phpcs:ignore WordPress.Security.NonceVerification.Missing */
+			)
 		)
 		{
 			return $user;
@@ -143,7 +162,7 @@ class WordPress extends AbstractTurnstile
 
 	public function lostPasswordPost($errors)
 	{
-		// Not ideal to use fake username/password, but lets us leverage the existing method without duplicating code
+		// Not ideal to use a fake username/password, but lets us leverage the existing method without duplicating code
 		$this->registrationErrors($errors, 'nullUsername', 'nullEmail');
 	}
 

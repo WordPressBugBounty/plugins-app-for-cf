@@ -1,6 +1,8 @@
 <?php
 
 namespace DigitalPoint\Cloudflare\Base;
+use DigitalPoint\Cloudflare\Helper\WordPress;
+
 class Pub
 {
 	protected static $instance;
@@ -87,6 +89,11 @@ class Pub
 	 */
 	protected function initHooks()
 	{
+		if (defined('WP_CLI') && WP_CLI)
+		{
+			\WP_CLI::add_command('app-for-cf', '\DigitalPoint\Cloudflare\Cli\PurgeCache');
+		}
+
 		$this->cloudflareRepo = new \DigitalPoint\Cloudflare\Repository\Cloudflare();
 		if ($this->cloudflareRepo->option('cloudflarePreload'))
 		{
@@ -150,6 +157,30 @@ class Pub
 		if (!empty($turnstileOptions['siteKey']) && !empty($turnstileOptions['secretKey']))
 		{
 			\DigitalPoint\Cloudflare\Turnstile\WordPress::getInstance($turnstileOptions);
+
+			if (WordPress::isPluginActive('woocommerce/woocommerce.php'))
+			{
+				\DigitalPoint\Cloudflare\Turnstile\WooCommerce::getInstance($turnstileOptions);
+			}
+
+			if (WordPress::isPluginActive('contact-form-7/wp-contact-form-7.php'))
+			{
+				\DigitalPoint\Cloudflare\Turnstile\ContactForm7::getInstance($turnstileOptions);
+			}
+			if (WordPress::isPluginActive('html-forms/html-forms.php'))
+			{
+				\DigitalPoint\Cloudflare\Turnstile\HtmlForms::getInstance($turnstileOptions);
+			}
+			if (WordPress::isPluginActive('metform/metform.php'))
+			{
+				\DigitalPoint\Cloudflare\Turnstile\MetForm::getInstance($turnstileOptions);
+			}
+			if (WordPress::isPluginActive('wpforms-lite/wpforms.php') || WordPress::isPluginActive('wpforms/wpforms.php'))
+			{
+				\DigitalPoint\Cloudflare\Turnstile\WPForms::getInstance($turnstileOptions);
+			}
+
+			do_action('app_for_cf_turnstile_loaded');
 		}
 
 		$class = static::autoload('DigitalPoint\Cloudflare\Base\PubAdvanced');
@@ -157,6 +188,7 @@ class Pub
 		{
 			\DigitalPoint\Cloudflare\Base\PubAdvanced::getInstance();
 		}
+
 	}
 
 	public static function plugin_activation()
@@ -535,7 +567,7 @@ class Pub
 
 		if ($optionEnabled)
 		{
-			return home_url() . '/cdn-cgi/image/format=auto,slow-connection-quality=30,onerror=redirect/' . $url;
+			return 'https://' . wp_parse_url(home_url(), PHP_URL_HOST) . '/cdn-cgi/image/format=auto,slow-connection-quality=30,onerror=redirect/' . $url;
 		}
 
 		return $url;

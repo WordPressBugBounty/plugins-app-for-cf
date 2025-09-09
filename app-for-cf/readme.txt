@@ -7,7 +7,7 @@ Tags: cloudflare, caching, performance, security, SEO
 Requires at least: 5.2
 Tested up to: 6.8
 Requires PHP: 5.4.0
-Stable tag: 1.9.4.3
+Stable tag: 1.9.5
 
 All things Cloudflare (caching, flexible SSL, Turnstile, settings, rules, analytics, media in R2, image transforms [AVIF, WebP], secure admin area).
 
@@ -23,7 +23,7 @@ Unlock advanced Cloudflare features without being a network administrator or dev
 * Cloudflare analytics on dashboard
 * Purge cache
 * Automatic image transformations (automatically serve AVIF/WebP versions to browsers that support them)
-* Turnstile CAPTCHA system for registrations, logins, password reset and/or comments
+* Turnstile CAPTCHA system for registrations, logins, password reset, comments and/or third party plugins
 * View Page rules, Cache rules, Firewall rules, IP Address rules, User Agent rules
 * View Zero Trust Network Access setup
 * View DMARC statistics
@@ -55,7 +55,7 @@ Automatically handles the situation where your web server is passing Cloudflare 
 
 **Turnstile CAPTCHA**
 
-Cloudflare Turnstile CAPTCHA support for registration, login, password reset and/or comment forms. Single-click setup (done transparently via API call).
+Cloudflare Turnstile CAPTCHA support for registration, login, password reset, comment forms, [WooCommerce](https://wordpress.org/plugins/woocommerce/), [Contact Form 7](https://wordpress.org/plugins/contact-form-7/), [HTML Forms](https://wordpress.org/plugins/html-forms/), [MetForm](https://wordpress.org/plugins/metform/) and/or [WPForms](https://wordpress.org/plugins/wpforms-lite/). Single-click setup (done transparently via API call).
 
 **Network analytics**
 
@@ -77,7 +77,7 @@ Track third parties that are sending email on your behalf (for example an email 
 
 **Multisite network support**
 
-You can have a network-wide Cloudflare API token that can be overridden on a per site basis. In the case where a multisite network operator has the site domains in a single Cloudflare account, they can allow the site users to use Cloudflare features for their individual site without disclosing the underlying actual API token.
+You can have a network-wide Cloudflare API token that can be overridden on a per site basis. In the case where a multisite network operator has the site domains in a single Cloudflare account, they can allow the site users to use Cloudflare features for their individual site without disclosing the underlying API token.
 
 Additionally, a single Pro license for the main network site allows the media from all sites in the network to be stored in the cloud, within a single Cloudflare R2 bucket.
 
@@ -125,7 +125,7 @@ Backups can be restored to different zones (for example if you had extensive con
 **Other features**
 
 * API calls are done exclusively through API Tokens (with the [minimum required permissions](https://appforcf.com/threads/permissions-needed-for-app-for-cloudflare%C2%AE.3/?utm_source=readme&utm_medium=wordpress&utm_campaign=plugin)) and **not** a Global API Key. Global API Keys are an incredibly bad idea from a security standpoint.
-* Ability to purge Cloudflare cache from WordPress admin.
+* Ability to purge Cloudflare cache from WordPress admin (or via WP-CLI).
 * Cached pages are automatically purged when a post/page is edited (just the necessary pages, not all pages). Stale content is not served to users.
 * Ability to designate an individual admin user to manage settings (maybe you don't want all admins to have the ability to change things in Cloudflare).
 * Ability to use WordPress filters to add your own logic to things (for example maybe you don't want to cache a certain page or post for whatever reason).
@@ -178,6 +178,12 @@ There is an option to allow settings to be changed only by one specific admin ac
 
 `define('CLOUDFLARE_BYPASS_USER_LOCK', true);`
 
+= Can I override my site URL? =
+
+If your site is setup in a situation where the backend site URL is different from the frontend URL (for example, a headless WordPress setup), you can use the `site_url` WordPress filter to alter your site URL as needed. If you need something more granular (only altering the site URL for this plugin), you can add the following to your **wp-config.php** file (use your frontend URL in place of example.com):
+
+`define('CLOUDFLARE_SITE_URL', 'https://example.com');`
+
 = I have an idea for this plugin, can I make a suggestion? =
 
 Yes, please do! You can find the suggestion area [over here](https://appforcf.com/support/suggestions.4/?utm_source=readme&utm_medium=wordpress&utm_campaign=plugin).
@@ -215,6 +221,19 @@ Yes, please do! You can find the suggestion area [over here](https://appforcf.co
 29. For multisite networks, you can optionally use a single R2 bucket to store the media across all your sites.
 
 == Changelog ==
+= 1.9.5 (2025-09-08)
+* Added the ability to purge cache via WP-CLI: wp app-for-cf purge-cache
+* Added Turnstile support for [WooCommerce](https://wordpress.org/plugins/woocommerce/)
+* Added Turnstile support for [Contact Form 7](https://wordpress.org/plugins/contact-form-7/)
+* Added Turnstile support for [HTML Forms](https://wordpress.org/plugins/html-forms/)
+* Added Turnstile support for [MetForm](https://wordpress.org/plugins/metform/)
+* Added Turnstile support for [WPForms](https://wordpress.org/plugins/wpforms-lite/)
+* Enabling the Image Transformations option will automatically enable Image Transformations in Cloudflare for your zone
+* Site URL can be overridden with the CLOUDFLARE_SITE_URL PHP named constant: define('CLOUDFLARE_SITE_URL', 'https://example.com');
+* Fixed an issue with Image Transforms for sites that use subdirectories for WordPress installation (rather than root of the domain)
+* Guest page caching works better with WooCommerce (checking for woocommerce_* cookies now)
+* Removed option: Speed -> Image Optimization -> Mirage (deprecated as of Sept 15, 2025)
+
 = 1.9.4.3 (2025-08-25) =
 * Purging non-pretty post URLs even if pretty URLs are setup (handles permalinks being different based on the post status)
 * Prioritize resources to be preloaded appropriately if third-party plugins use the wp_preload_resources hook to call specific resources out for preloading

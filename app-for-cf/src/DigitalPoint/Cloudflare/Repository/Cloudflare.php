@@ -493,12 +493,6 @@ abstract class CloudflareAbstract extends Repository
 				'good' => 'off',
 				'data_type' => 'bool',
 			],
-			'mirage' => [
-				'section' => 'speed',
-				'good' => 'off',
-				'beta' => true,
-				'data_type' => 'bool',
-			],
 			'speed_brain' => [
 				'section' => 'speed',
 				'subsection_label' => $this->phrase('cf_section_title.content_optimization'),
@@ -939,8 +933,8 @@ abstract class CloudflareAbstract extends Repository
 	public function prepareGraphQLCaptchaSolveRate($results)
 	{
 		return [
-			'issued' => intval(!empty($results['data']['viewer']['zones'][0]['issued'][0]['count']) ? $results['data']['viewer']['zones'][0]['issued'][0]['count'] : 0),
-			'solved' => intval(!empty($results['data']['viewer']['zones'][0]['solved'][0]['count']) ? $results['data']['viewer']['zones'][0]['solved'][0]['count'] : 0)
+			'issued' => (int)(!empty($results['data']['viewer']['zones'][0]['issued'][0]['count']) ? $results['data']['viewer']['zones'][0]['issued'][0]['count'] : 0),
+			'solved' => (int)(!empty($results['data']['viewer']['zones'][0]['solved'][0]['count']) ? $results['data']['viewer']['zones'][0]['solved'][0]['count'] : 0)
 		];
 	}
 
@@ -954,7 +948,7 @@ abstract class CloudflareAbstract extends Repository
 	public function prepareGraphQLRuleActivityQuery($results)
 	{
 		return [
-			'issued' => intval(@$results['data']['viewer']['zones'][0]['issued'][0]['count']),
+			'issued' => (int)@$results['data']['viewer']['zones'][0]['issued'][0]['count'],
 		];
 	}
 

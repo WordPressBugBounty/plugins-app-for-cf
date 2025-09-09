@@ -11,7 +11,7 @@ trait WP
 
 	public function getGuestCache()
 	{
-		return '(not http.cookie contains "wp-" and not http.cookie contains "wordpress_" and not http.cookie contains "comment_" and not http.request.uri.path contains "/wp-login.php")';
+		return '(not http.cookie contains "wp-" and not http.cookie contains "wordpress_" and not http.cookie contains "comment_" and not http.cookie contains "woocommerce_" and not http.request.uri.path contains "/wp-login.php")';
 	}
 
 	public function getBlockInternal()

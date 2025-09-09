@@ -12,24 +12,24 @@ class WordPress
 
 	public static function addAsset($type = 'css')
 	{
-		if ($type == 'css')
+		if ($type === 'css')
 		{
 			wp_enqueue_style('app-for-cf_admin_css', APP_FOR_CLOUDFLARE_PLUGIN_URL . 'assets/cf/css/admin.min.css', [], APP_FOR_CLOUDFLARE_VERSION);
 		}
-		elseif($type == 'js')
+		elseif($type === 'js')
 		{
 			wp_enqueue_script('app-for-cf_admin_js', APP_FOR_CLOUDFLARE_PLUGIN_URL . 'assets/cf/js/admin.min.js', [], APP_FOR_CLOUDFLARE_VERSION, ['in_footer' => true]);
 		}
-		elseif($type == 'chart')
+		elseif($type === 'chart')
 		{
 			wp_enqueue_script('app-for-cf_chartjs_js', APP_FOR_CLOUDFLARE_PLUGIN_URL . 'assets/chartjs/chart.umd.js', [], '4.5.0', ['in_footer' => true]);
 			wp_enqueue_script('app-for-cf_chart_js', APP_FOR_CLOUDFLARE_PLUGIN_URL . 'assets/cf/js/chart.min.js', [], APP_FOR_CLOUDFLARE_VERSION, ['in_footer' => true]);
 		}
-		elseif($type == 'notice')
+		elseif($type === 'notice')
 		{
 			wp_enqueue_script('app-for-cf_notice_js', APP_FOR_CLOUDFLARE_PLUGIN_URL . 'assets/cf/js/notice.min.js', [], APP_FOR_CLOUDFLARE_VERSION, ['in_footer' => true]);
 		}
-		elseif($type == 'css_admin_plugin')
+		elseif($type === 'css_admin_plugin')
 		{
 			wp_enqueue_style('app-for-cf_admin_plugin_css', APP_FOR_CLOUDFLARE_PLUGIN_URL . 'assets/cf/css/admin_plugin.min.css', [], APP_FOR_CLOUDFLARE_VERSION);
 		}
@@ -69,15 +69,17 @@ class WordPress
 
 		$input = array_merge((array)$defaults, $input);
 
-		// in case $defaults weren't an array to start with.
-		unset($input[0]);
-
 		if (is_array($input))
 		{
+			// in case $defaults weren't an array to start with.
+			unset($input[0]);
+
 			foreach($input as $name => $item)
 			{
 				if (is_array($item))
 				{
+					unset($input[$name][0]);
+
 					foreach($item as $subItemName => $subItem)
 					{
 						if (!is_array($subItem))
@@ -88,7 +90,7 @@ class WordPress
 				}
 				else
 				{
-					if ($name != 'extra_js' || !current_user_can('unfiltered_html'))
+					if ($name !== 'extra_js' || !current_user_can('unfiltered_html'))
 					{
 						$input[$name] = wp_strip_all_tags($item);
 					}
@@ -175,11 +177,22 @@ class WordPress
 			}
 		}
 
+		if (!empty($input['cfImagesTransform']) && !empty($input['cfZoneId']))
+		{
+			self::getApi()->setSettings($input['cfZoneId'], ['value' => 'on'], 'settings/transformations');
+		}
+
 		return $input;
 	}
 
 	public static function hasOwnDomain()
 	{
+		// Mostly for Turnstile testing when the site isn't on its own domain.
+		if(defined('WP_DEBUG') && WP_DEBUG)
+		{
+			return true;
+		}
+
 		if (is_multisite() && !is_main_site() && defined('DOMAIN_CURRENT_SITE'))
 		{
 			$siteHostname = strtolower(wp_parse_url(site_url(), PHP_URL_HOST));
@@ -201,5 +214,11 @@ class WordPress
 		}
 
 		return true;
+	}
+
+	public static function isPluginActive($plugin)
+	{
+		include_once ABSPATH . 'wp-admin/includes/plugin.php';
+		return is_plugin_active($plugin);
 	}
 }

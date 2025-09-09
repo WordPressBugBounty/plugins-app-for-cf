@@ -3,8 +3,7 @@ namespace DigitalPoint\Cloudflare\Turnstile;
 
 class AbstractTurnstile
 {
-	protected static $instance;
-
+	protected static $instances = [];
 	protected $turnstileOptions = [];
 
 	/**
@@ -17,14 +16,13 @@ class AbstractTurnstile
 
 	public static final function getInstance(array $turnstileOptions = [])
 	{
-		if (!static::$instance)
+		$class = static::class;
+		if (empty(static::$instances[$class]))
 		{
-			$class = get_called_class();
-			static::$instance = new $class($turnstileOptions);
-			static::$instance->initHooks();
+			static::$instances[$class] = new $class($turnstileOptions);
+			static::$instances[$class]->initHooks();
 		}
-
-		return static::$instance;
+		return static::$instances[$class];
 	}
 
 	protected function addTurnstileScript()
@@ -32,10 +30,18 @@ class AbstractTurnstile
 		wp_enqueue_script('turnstile', 'https://challenges.cloudflare.com/turnstile/v0/api.js', [], null, ['strategy' => 'defer', 'in_footer' => true]); /* @phpcs:ignore WordPress.WP.EnqueuedResourceParameters.MissingVersion, PluginCheck.CodeAnalysis.EnqueuedResourceOffloading.OffloadedContent */
 	}
 
-	protected function addTurnstileHtml()
+	protected function addTurnstileHtml($print = true)
 	{
-		echo "<style>#login{min-width:350px;}</style>";
-		echo '<div class="cf-turnstile" data-sitekey="' . esc_attr($this->turnstileOptions['siteKey']) . '" data-size="flexible" data-callback="javascriptCallback"></div>';
+		$html = '<style>#login{min-width:350px;}</style><div class="cf-turnstile" data-sitekey="' . esc_attr($this->turnstileOptions['siteKey']) . '" data-size="flexible" data-callback="javascriptCallback"></div>';
+
+		if ($print)
+		{
+			echo $html; /* @phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped */
+		}
+		else
+		{
+			return $html;
+		}
 	}
 
 	protected function isXmlRest()

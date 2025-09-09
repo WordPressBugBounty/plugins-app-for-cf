@@ -97,7 +97,16 @@ trait WP
 
 	protected function getSiteUrl()
 	{
-		return get_site_url();
+		if (defined('CLOUDFLARE_SITE_URL') && CLOUDFLARE_SITE_URL != '')
+		{
+			$siteUrl = idn_to_ascii(CLOUDFLARE_SITE_URL, IDNA_DEFAULT, INTL_IDNA_VARIANT_UTS46);
+		}
+		else
+		{
+			$siteUrl = get_site_url();
+		}
+
+		return strtolower($siteUrl);
 	}
 
 	protected function isAdmin()
@@ -381,7 +390,6 @@ trait WP
 				'cf_setting_title.early_hints' => __('Early Hints', 'app-for-cf'),
 				'cf_setting_title.h2_prioritization' => __('Enhanced HTTP/2 Prioritization', 'app-for-cf'),
 				'cf_setting_title.minify' => __('Auto Minify', 'app-for-cf'),
-				'cf_setting_title.mirage' => __('Mirage', 'app-for-cf'),
 				'cf_setting_title.polish' => __('Polish', 'app-for-cf'),
 				'cf_setting_title.webp' => __('Polish WebP', 'app-for-cf'),
 				'cf_setting_title.rocket_loader' => __('Rocket Loader™', 'app-for-cf'),
@@ -438,7 +446,6 @@ trait WP
 				'cf_setting_explain.fonts' => __('Optimize font loading. Cloudflare Fonts reduces external requests for third-party fonts, resulting in improved privacy and performance for faster page loads.', 'app-for-cf'),
 				'cf_setting_explain.early_hints' => __('Cloudflare\'s edge will cache and send 103 Early Hints responses with Link headers from your HTML pages. Early Hints allows browsers to preload linked assets before they see a 200 OK or other final response from the origin.', 'app-for-cf'),
 				'cf_setting_explain.h2_prioritization' => __('Optimizes the order of resource delivery, independent of the browser. Greatest improvements will be experienced by visitors using Safari and Edge browsers.', 'app-for-cf'),
-				'cf_setting_explain.mirage' => __('Improve load time for pages that include images on mobile devices with slow network connections.', 'app-for-cf'),
 				'cf_setting_explain.polish' => __('Improve image load time by optimizing images hosted on your domain.', 'app-for-cf'),
 				'cf_setting_explain.webp' => __('Optionally, the WebP image codec can be used with supported clients for additional performance benefits.', 'app-for-cf'),
 				'cf_setting_explain.rocket_loader' => __('Improve the paint time for pages which include JavaScript.', 'app-for-cf'),
