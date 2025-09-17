@@ -221,7 +221,7 @@ Yes, please do! You can find the suggestion area [over here](https://appforcf.co
 29. For multisite networks, you can optionally use a single R2 bucket to store the media across all your sites.
 
 == Changelog ==
-= 1.9.5 (2025-09-08)
+= 1.9.5 (2025-09-08) =
 * Added the ability to purge cache via WP-CLI: wp app-for-cf purge-cache
 * Added Turnstile support for [WooCommerce](https://wordpress.org/plugins/woocommerce/)
 * Added Turnstile support for [Contact Form 7](https://wordpress.org/plugins/contact-form-7/)
