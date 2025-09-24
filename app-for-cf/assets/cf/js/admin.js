@@ -85,14 +85,13 @@ let CloudflareAppAdmin = {};
             select_tab: function(tab) {
 				function fadeIn(element, duration = 400) {
 					element.style.opacity = 0;
-					element.style.display = '';
+					element.style.display = 'revert';
 					let start = null;
 
 					function step(timestamp) {
 						if (!start) start = timestamp;
 						let progress = timestamp - start;
-						let opacity = Math.min(progress / duration, 1);
-						element.style.opacity = opacity;
+						element.style.opacity = Math.min(progress / duration, 1);
 						if (progress < duration) {
 							requestAnimationFrame(step);
 						}
@@ -111,8 +110,7 @@ let CloudflareAppAdmin = {};
 					function step(timestamp) {
 						if (!start) start = timestamp;
 						let progress = timestamp - start;
-						let opacity = Math.max(1 - progress / duration, 0);
-						element.style.opacity = opacity;
+						element.style.opacity = Math.max(1 - progress / duration, 0);
 						if (progress < duration) {
 							requestAnimationFrame(step);
 						} else {

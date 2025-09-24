@@ -120,7 +120,7 @@ class Cloudflare extends Advanced\Cloudflare
 
 
 
-	public function actionAnalytics()
+	public function actionStats()
 	{
 		$this->assertHasOwnDomain();
 
@@ -162,7 +162,7 @@ class Cloudflare extends Advanced\Cloudflare
 		}
 	}
 
-	public function actionAnalyticsDmarc()
+	public function actionStatsDmarc()
 	{
 		$this->assertHasOwnDomain();
 
@@ -199,7 +199,7 @@ class Cloudflare extends Advanced\Cloudflare
 		$this->assertHasOwnDomain();
 
 		// A bit of a special case for settings action because of how AJAX system works (need to whitelist actions here otherwise you will get stuck in an infinite loop with this method repeating)
-		if(!empty($_REQUEST['action']) && $_REQUEST['action'] == 'easy') /* @phpcs:ignore WordPress.Security.NonceVerification.Recommended */
+		if(!empty($_REQUEST['action']) && $_REQUEST['action'] === 'easy') /* @phpcs:ignore WordPress.Security.NonceVerification.Recommended */
 		{
 			if ($this->handleAction() === false)
 			{
@@ -232,18 +232,32 @@ class Cloudflare extends Advanced\Cloudflare
 		$appForCloudflareOptions = $this->option(null);
 
 		$tokenId = '';
+		$tokenPermissions = [];
+
 		$error = esc_html__('API token does not appear to be valid.', 'app-for-cf');
 		if (!empty($appForCloudflareOptions['cloudflareAuth']['token']))
 		{
 			try {
-				$results = \DigitalPoint\Cloudflare\Helper\WordPress::getApi()->verifyToken();
-				if (!empty($results) && is_array($results))
+
+				$cloudflareRepo = $this->getCloudflareRepo();
+
+				$tokenId = $cloudflareRepo->verifyToken();
+				if (is_string($tokenId))
 				{
-					if (!empty($results['result']['id']))
+					$error = '';
+
+					try
 					{
-						$tokenId = $results['result']['id'];
-						$error = '';
+						$tokenPermissions = $cloudflareRepo->getTokenPermissions($tokenId);
 					}
+					catch(\Exception $e)
+					{
+						$tokenPermissions = null;
+					}
+				}
+				else
+				{
+					$tokenId = null;
 				}
 
 				if ($tokenId)
@@ -255,7 +269,7 @@ class Cloudflare extends Advanced\Cloudflare
 			{
 			}
 
-			if (empty($appForCloudflareOptions['cfTokenId']) || $appForCloudflareOptions['cfTokenId'] != $tokenId)
+			if (empty($appForCloudflareOptions['cfTokenId']) || $appForCloudflareOptions['cfTokenId'] !== $tokenId)
 			{
 				$this->updateOption('cfTokenId', $tokenId);
 			}
@@ -263,6 +277,7 @@ class Cloudflare extends Advanced\Cloudflare
 
 		$viewParams['tokenId'] = $tokenId;
 		$viewParams['error'] = $error;
+		$viewParams['tokenPermissions'] = $tokenPermissions;
 
 		return $this->view('settings', $viewParams);
 	}
@@ -473,9 +488,6 @@ class Cloudflare extends Advanced\Cloudflare
 		return $this->view('access', $viewParams);
 	}
 
-
-
-
 	public function actionRules()
 	{
 		if ($this->handleAction() === false)
@@ -495,6 +507,45 @@ class Cloudflare extends Advanced\Cloudflare
 
 		return $this->view('rules', $viewParams);
 	}
+
+
+
+
+	public function actionAnalytics()
+	{
+		$this->assertHasOwnDomain();
+
+		$cloudflareRepo = $this->getCloudflareRepo();
+
+		$viewParams = $cloudflareRepo->getRumSiteStatus();
+		$viewParams['sub_action'] = $this->filter('sub_action', 'str');
+
+		if ($viewParams['sub_action'] === 'enable')
+		{
+			$this->assertNonce();
+			if ($this->isPost())
+			{
+				$cloudflareRepo->updateRumSite(null, true, $this->filter('exclude_europe', 'bool'));
+				wp_safe_redirect(menu_page_url('app-for-cf_analytics', false));
+			}
+			else
+			{
+				return $this->view('analytics_enable', $viewParams);
+			}
+		}
+		elseif ($viewParams['sub_action'] === 'disable')
+		{
+			$this->assertNonce();
+			$cloudflareRepo->updateRumSite(null, false);
+			wp_safe_redirect(menu_page_url('app-for-cf_analytics', false));
+		}
+
+		$viewParams['accountId'] = $cloudflareRepo->getAccountId();
+		return $this->view('analytics', $viewParams);
+	}
+
+
+
 
 	public function actionCaching()
 	{

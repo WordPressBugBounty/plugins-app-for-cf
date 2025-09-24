@@ -38,8 +38,8 @@ class Admin
 		add_action('admin_menu', [$this, 'adminMenu'], 10);
 
 		add_action('wp_ajax_app-for-cf_settings', [$this, 'displayPage']);
-		add_action('wp_ajax_app-for-cf_analytics', [$this, 'displayPage']);
-		add_action('wp_ajax_app-for-cf_analytics-dmarc', [$this, 'displayPage']);
+		add_action('wp_ajax_app-for-cf_stats', [$this, 'displayPage']);
+		add_action('wp_ajax_app-for-cf_stats-dmarc', [$this, 'displayPage']);
 		add_action('wp_ajax_app-for-cf_notice_dismiss', [$this, 'displayPage']);
 
 		add_filter('plugin_action_links_app-for-cf/app-for-cf.php', [$this, 'filterPluginActionLinks'], 10, 2);
@@ -92,28 +92,31 @@ class Admin
 		{
 			add_menu_page(esc_html__('Cloudflare', 'app-for-cf'), esc_html__('Cloudflare', 'app-for-cf') . (empty($cloudflareAppOptions['cloudflareAuth']['token']) ? ' <span class="menu-counter"><span class="count">!</span></span>' : ''), 'manage_options', 'app-for-cf_caching', null, 'dashicons-cloud', 76.19751234 );
 
-			// Doesn't show in menu (parent_slug = '')
+			// Doesn't show in menu (parent_slug = '') - why?
 			add_submenu_page('', esc_html__('Cloudflare Settings', 'app-for-cf'), esc_html__('Cloudflare Settings', 'app-for-cf'), 'manage_options', 'app-for-cf_settings', [$this, 'displayPage']);
 
-			add_submenu_page('app-for-cf_caching', esc_html__('Public page caching', 'app-for-cf'), esc_html__('Public page caching', 'app-for-cf'), 'manage_options', 'app-for-cf_caching', [$this, 'displayPage'], 1);
+			add_submenu_page('app-for-cf_caching', esc_html__('Public page caching', 'app-for-cf'), esc_html__('Public page caching', 'app-for-cf'), 'manage_options', 'app-for-cf_caching', [$this, 'displayPage'], 20);
 
-			add_submenu_page('app-for-cf_caching', esc_html__('Firewall', 'app-for-cf'), esc_html__('Firewall', 'app-for-cf'), 'manage_options', 'app-for-cf_firewall', [$this, 'displayPage'], 2);
-			add_submenu_page('app-for-cf_caching', esc_html__('Access', 'app-for-cf'), esc_html__('Access', 'app-for-cf'), 'manage_options', 'app-for-cf_access', [$this, 'displayPage'], 3);
-			add_submenu_page('app-for-cf_caching', esc_html__('Rules', 'app-for-cf'), esc_html__('Rules', 'app-for-cf'), 'manage_options', 'app-for-cf_rules', [$this, 'displayPage'], 4);
-			add_submenu_page('app-for-cf_caching', esc_html__('R2 (media storage)', 'app-for-cf'), esc_html__('R2 (media storage)', 'app-for-cf'), 'manage_options', 'app-for-cf_r2', [$this, 'displayPage'], 5); // Why does this not order properly with an integer?!
-			add_submenu_page('app-for-cf_caching', esc_html__('DMARC management', 'app-for-cf'), esc_html__('DMARC management', 'app-for-cf'), 'manage_options', 'app-for-cf_dmarc', [$this, 'displayPage'], 6);
-			add_submenu_page('app-for-cf_caching', esc_html__('Purge cache', 'app-for-cf'), esc_html__('Purge cache', 'app-for-cf'), 'manage_options', 'app-for-cf_cache', [$this, 'displayPage'], 7);
+			add_submenu_page('app-for-cf_caching', esc_html__('Firewall', 'app-for-cf'), esc_html__('Firewall', 'app-for-cf'), 'manage_options', 'app-for-cf_firewall', [$this, 'displayPage'], 30);
+			add_submenu_page('app-for-cf_caching', esc_html__('Access', 'app-for-cf'), esc_html__('Access', 'app-for-cf'), 'manage_options', 'app-for-cf_access', [$this, 'displayPage'], 40);
+			add_submenu_page('app-for-cf_caching', esc_html__('Rules', 'app-for-cf'), esc_html__('Rules', 'app-for-cf'), 'manage_options', 'app-for-cf_rules', [$this, 'displayPage'], 50);
+			add_submenu_page('app-for-cf_caching', esc_html__('R2 (media storage)', 'app-for-cf'), esc_html__('R2 (media storage)', 'app-for-cf'), 'manage_options', 'app-for-cf_r2', [$this, 'displayPage'], 60); // Why does this not order properly with an integer?!
+			add_submenu_page('app-for-cf_caching', esc_html__('Purge cache', 'app-for-cf'), esc_html__('Purge cache', 'app-for-cf'), 'manage_options', 'app-for-cf_cache', [$this, 'displayPage'], 70);
+			add_submenu_page('app-for-cf_caching', esc_html__('Settings', 'app-for-cf'), esc_html__('Settings', 'app-for-cf') . (empty($cloudflareAppOptions['cloudflareAuth']['token']) ? ' <span class="menu-counter"><span class="count">' . esc_html__('Missing API token', 'app-for-cf') . '</span></span>' : ''), 'manage_options', 'options-general.php' . '?page=app-for-cf', null, 10);
 
-			add_submenu_page('app-for-cf_caching', esc_html__('HTTP request trace', 'app-for-cf'), esc_html__('HTTP request trace', 'app-for-cf'), 'manage_options', 'app-for-cf_request-trace', [$this, 'displayPage'], 20);
+			add_submenu_page('app-for-cf_caching', esc_html__('Analytics', 'app-for-cf'), esc_html__('Analytics', 'app-for-cf'), 'manage_options', 'app-for-cf_menu_heading', '', 100);
+			add_submenu_page('app-for-cf_caching', esc_html__('Web analytics', 'app-for-cf'), esc_html__('Web analytics', 'app-for-cf'), 'manage_options', 'app-for-cf_analytics', [$this, 'displayPage'], 110);
+			add_submenu_page('app-for-cf_caching', esc_html__('DMARC management', 'app-for-cf'), esc_html__('DMARC management', 'app-for-cf'), 'manage_options', 'app-for-cf_dmarc', [$this, 'displayPage'], 120);
+
+			add_submenu_page('app-for-cf_caching', esc_html__('Tools', 'app-for-cf'), esc_html__('Tools', 'app-for-cf'), 'manage_options', 'app-for-cf_menu_heading', '', 200);
+			add_submenu_page('app-for-cf_caching', esc_html__('HTTP request trace', 'app-for-cf'), esc_html__('HTTP request trace', 'app-for-cf'), 'manage_options', 'app-for-cf_request-trace', [$this, 'displayPage'], 210);
 
 			if (\DigitalPoint\Cloudflare\Helper\WordPress::hasOwnApiToken())
 			{
-				add_submenu_page('app-for-cf_caching', esc_html__('IP address details', 'app-for-cf'), esc_html__('IP address details', 'app-for-cf'), 'manage_options', 'app-for-cf_ip-details', [$this, 'displayPage'], 25);
-				add_submenu_page('app-for-cf_caching', esc_html__('Domain details', 'app-for-cf'), esc_html__('Domain details', 'app-for-cf'), 'manage_options', 'app-for-cf_domain-details', [$this, 'displayPage'], 30);
-				add_submenu_page('app-for-cf_caching', esc_html__('WHOIS', 'app-for-cf'), esc_html__('WHOIS', 'app-for-cf'), 'manage_options', 'app-for-cf_whois', [$this, 'displayPage'], 35);
+				add_submenu_page('app-for-cf_caching', esc_html__('IP address details', 'app-for-cf'), esc_html__('IP address details', 'app-for-cf'), 'manage_options', 'app-for-cf_ip-details', [$this, 'displayPage'], 220);
+				add_submenu_page('app-for-cf_caching', esc_html__('Domain details', 'app-for-cf'), esc_html__('Domain details', 'app-for-cf'), 'manage_options', 'app-for-cf_domain-details', [$this, 'displayPage'], 230);
+				add_submenu_page('app-for-cf_caching', esc_html__('WHOIS', 'app-for-cf'), esc_html__('WHOIS', 'app-for-cf'), 'manage_options', 'app-for-cf_whois', [$this, 'displayPage'], 240);
 			}
-
-			add_submenu_page('app-for-cf_caching', esc_html__('Settings', 'app-for-cf'), esc_html__('Settings', 'app-for-cf') . (empty($cloudflareAppOptions['cloudflareAuth']['token']) ? ' <span class="menu-counter"><span class="count">' . esc_html__('Missing API token', 'app-for-cf') . '</span></span>' : ''), 'manage_options', 'options-general.php' . '?page=app-for-cf', null, 100);
 
 			$hook = add_options_page( esc_html__('Cloudflare', 'app-for-cf'), esc_html__('Cloudflare', 'app-for-cf'), 'manage_options', 'app-for-cf', [$this, 'displaySettingsPage']);
 			add_action( "load-$hook", [$this, 'adminHelp']);
@@ -126,6 +129,10 @@ class Admin
 			{
 				add_action( 'admin_notices', [$this, 'uploadBannerBucketSetup']);
 			}
+
+			wp_register_script('app-for-cf_submenu', '', [], false, ['in_footer' => true]); /* @phpcs:ignore WordPress.WP.EnqueuedResourceParameters.NoExplicitVersion */
+			wp_enqueue_script('app-for-cf_submenu');
+			wp_add_inline_script('app-for-cf_submenu', 'document.querySelectorAll(".wp-submenu a[href=\'app-for-cf_menu_heading\']").forEach(e=>{e.removeAttribute("href");e.setAttribute("style", "pointer-events:none;font-weight:bold;padding:10px 0 5px 5px;font-size:120%;")})' );
 		}
 	}
 

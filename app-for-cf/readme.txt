@@ -7,7 +7,7 @@ Tags: cloudflare, caching, performance, security, SEO
 Requires at least: 5.2
 Tested up to: 6.8
 Requires PHP: 5.4.0
-Stable tag: 1.9.5
+Stable tag: 1.9.6
 
 All things Cloudflare (caching, flexible SSL, Turnstile, settings, rules, analytics, media in R2, image transforms [AVIF, WebP], secure admin area).
 
@@ -20,6 +20,7 @@ Unlock advanced Cloudflare features without being a network administrator or dev
 * View/set all Cloudflare settings
 * Fixes Cloudflare Flexible SSL redirect loops
 * Fixes situation when IPs are coming through as Cloudflare IPs rather than user IPs
+* Cloudflare web analytics support
 * Cloudflare analytics on dashboard
 * Purge cache
 * Automatic image transformations (automatically serve AVIF/WebP versions to browsers that support them)
@@ -221,6 +222,13 @@ Yes, please do! You can find the suggestion area [over here](https://appforcf.co
 29. For multisite networks, you can optionally use a single R2 bucket to store the media across all your sites.
 
 == Changelog ==
+= 1.9.6 (2025-09-23) =
+* Added support for Cloudflare web analytics (requires two additional API permissions for your token (`Account.Account Settings: Read` & `Account.Account Settings: Edit`), for those upgrading from a previous version)
+* Token permissions are automatically checked (requires an additional API permissions for your token (`User.API Token: Read`), for those upgrading from a previous version)
+* Reworked admin navigation to have subsections
+* Removed option: Speed -> Other -> Signed Exchanges (deprecated as of Oct 20, 2025)
+* Removed option: Speed -> Other -> AMP Real URL (deprecated as of Oct 20, 2025)
+
 = 1.9.5 (2025-09-08) =
 * Added the ability to purge cache via WP-CLI: wp app-for-cf purge-cache
 * Added Turnstile support for [WooCommerce](https://wordpress.org/plugins/woocommerce/)
@@ -378,6 +386,9 @@ Yes, please do! You can find the suggestion area [over here](https://appforcf.co
 The WordPress version is kept in feature parity with the XenForo version. You can find the update changelog for older versions (if you are curious), [over here](https://xenforo.com/community/resources/digitalpoint-app-for-cloudflare%C2%AE.8750/update/45114/).
 
 == Upgrade Notice ==
+
+= 1.9.6 =
+Cloudflare web analytics support
 
 = 1.9.3 =
 Turnstile support

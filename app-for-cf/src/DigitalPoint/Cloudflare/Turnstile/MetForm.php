@@ -19,7 +19,7 @@ class MetForm extends AbstractTurnstile
 		{
 			$this->addTurnstileScript();
 			// Ugly, but MetForms renders HTML after the fact with JavaScript insertion...
-			wp_add_inline_script('turnstile', 'jQuery(window).on("elementor/frontend/init",()=>{turnstile.render("#cf-turnstile")});');
+			wp_add_inline_script('turnstile', 'window.addEventListener("elementor/frontend/init",()=>{turnstile.render("#cf-turnstile")});');
 			$widgetContent .= '<br />' . str_replace('class=', 'id="cf-turnstile" class=', $this->addTurnstileHtml(false));
 		}
 		return $widgetContent;

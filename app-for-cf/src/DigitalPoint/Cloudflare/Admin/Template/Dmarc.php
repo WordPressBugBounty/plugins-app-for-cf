@@ -26,7 +26,7 @@ class Dmarc extends AbstractTemplate
 
 		echo '
 		<table class="wp-list-table dmarc widefat centerLastColumn"><tr><td>
-		<div id="cfRange" class="switch-field switch-toggle switch-candy" data-action="app-for-cf_analytics-dmarc">
+		<div id="cfRange" class="switch-field switch-toggle switch-candy" data-action="app-for-cf_stats-dmarc">
 			<input name="range" id="switchFieldWeek" type="radio" value="week" checked><label for="switchFieldWeek">Week</label>
 			<input name="range" id="switchFieldMonth" type="radio" value="month"><label for="switchFieldMonth">Month</label>
 </div>';

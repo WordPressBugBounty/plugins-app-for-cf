@@ -9,7 +9,7 @@ class Dashboard extends AbstractTemplate
 		$this->addAsset('chart');
 
 echo '
-		<div id="cfRange" class="switch-field switch-toggle switch-candy" data-action="app-for-cf_analytics">
+		<div id="cfRange" class="switch-field switch-toggle switch-candy" data-action="app-for-cf_stats">
 			<input name="range" id="switchFieldDay" type="radio" value="day" checked><label for="switchFieldDay">Day</label>
 			<input name="range" id="switchFieldWeek" type="radio" value="week"><label for="switchFieldWeek">Week</label>
 			<input name="range" id="switchFieldMonth" type="radio" value="month"><label for="switchFieldMonth">Month</label>

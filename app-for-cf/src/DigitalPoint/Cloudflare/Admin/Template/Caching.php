@@ -20,9 +20,8 @@ class Caching extends AbstractTemplate
 			]
 		);
 
-		/* translators: %1$s = <a href...>, %2$s = </a> */
 		echo wp_kses(
-			/* translators: %1$s = <a href...>, %2$s = </a>, %3$s = Percentage, %4$s = Milliseconds */
+			/* translators: %1$s = <a href...>, %2$s = </a>, %3$s = Percentage, %4$d = Milliseconds */
 			sprintf(__('This allows you to enable rendered pages of your site to be cached for guests (never for logged in users) in Cloudflare\'s data centers around the world for a certain amount of time. The upside is that pages are delivered to users incredibly fast (%1$s%3$s of the world is less then %4$dms from a Cloudflare data center%2$s).', 'app-for-cf'), '<a href="https://www.cloudflare.com/network/" target="_blank">', '</a>', '95%', 50),
 			[
 				'a' => [
@@ -112,7 +111,7 @@ class Caching extends AbstractTemplate
 
 		$appForCloudflareOptions = $this->option(null);
 
-		$cacheTime = intval(@$appForCloudflareOptions['cfPageCachingSeconds']);
+		$cacheTime = (int)@$appForCloudflareOptions['cfPageCachingSeconds'];
 
 		$cloudflareRepo = new \DigitalPoint\Cloudflare\Repository\Cloudflare();
 

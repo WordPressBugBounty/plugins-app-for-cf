@@ -490,6 +490,59 @@ abstract class CloudflareAbstract
 		return $this->makeRequest('GET', sprintf('accounts/%s/access/groups', $accountId), ['query' => $params]);
 	}
 
+
+
+	public function getRumSites($accountId)
+	{
+		$params = [
+			'page' => 1,
+			'per_page' => 10000,
+			'order_by' => 'created',
+		];
+		return $this->makeRequest('GET', sprintf('accounts/%s/rum/site_info/list', $accountId), ['query' => $params]);
+	}
+
+	public function createRumSite($accountId, $zoneId, $enabled = true, $excludeEurope = false, $autoInstall = true)
+	{
+		$params = [
+			'auto_install' => (bool)$autoInstall,
+		];
+		if ($zoneId)
+		{
+			$params['zone_tag'] = $zoneId;
+		}
+
+		$result = $this->makeRequest('POST', sprintf('/accounts/%s/rum/site_info', $accountId), ['json' => $params]);
+		if (!empty($result['result']) && ($excludeEurope || !$enabled))
+		{
+			$result = $this->updateRumSite(
+				$accountId,
+				$result['result']['site_tag'],
+				!empty($result['result']['ruleset']['zone_tag']) ? $result['result']['ruleset']['zone_tag'] : '',
+				$enabled,
+				$excludeEurope,
+				$autoInstall);
+		}
+
+		return $result;
+	}
+
+	public function updateRumSite($accountId, $siteId, $zoneId = null, $enabled = true, $excludeEurope = false, $autoInstall = true)
+	{
+		$params = [
+			'auto_install' => (bool)$autoInstall,
+			'enabled' => (bool)$enabled,
+			'lite' => (bool)$excludeEurope,
+		];
+		if ($zoneId)
+		{
+			$params['zone_tag'] = $zoneId;
+		}
+
+		return $this->makeRequest('PUT', sprintf('/accounts/%s/rum/site_info/%s', $accountId, $siteId), ['json' => $params]);
+	}
+
+
 	public function getTurnstileSites($accountId)
 	{
 		$params = [];
@@ -590,6 +643,18 @@ abstract class CloudflareAbstract
 		return $this->makeRequest('GET', sprintf('user/tokens/verify'), ['query' => $params]);
 	}
 
+	public function getTokenDetails($tokenId)
+	{
+		$params = [];
+		return $this->makeRequest('GET', sprintf('user/tokens/%s', $tokenId), ['query' => $params]);
+	}
+
+	public function getTokenPermissionGroups()
+	{
+		$params = [];
+		return $this->makeRequest('GET', sprintf('user/tokens/permission_groups'), ['query' => $params]);
+	}
+
 	public function purgeCache($zoneId, array $params = ['purge_everything' => true])
 	{
 		return $this->makeRequest('POST', sprintf('zones/%s/purge_cache', $zoneId), ['json' => $params], [971, 1134]);
@@ -640,7 +705,6 @@ abstract class CloudflareAbstract
 			{
 				$endpoint = sprintf($baseUrl . '%s', $endpoint);
 			}
-
 			$response = $this->request($method, $endpoint, $params);
 		}
 		catch(Exception\Client $e)
@@ -709,7 +773,7 @@ abstract class CloudflareAbstract
 			{
 				if ($this->isDebug())
 				{
-					$message .= '<br /> <br /><b>' . $method . '</b> ' . sprintf($baseUrl . '%s', $endpoint) . '<br /><br />' . json_encode($params);
+					$message .= '<br /> <br /><b>' . $method . '</b> ' . $endpoint . '<br /><br />' . json_encode($params);
 				}
 
 				$this->printableException($message, 0, $e);

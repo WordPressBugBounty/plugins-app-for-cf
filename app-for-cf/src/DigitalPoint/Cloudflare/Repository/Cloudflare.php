@@ -552,32 +552,6 @@ abstract class CloudflareAbstract extends Repository
 				'data_type' => 'bool',
 			],
 
-			'sxg' => [
-				'section' => 'speed',
-				'subsection_label' => $this->phrase('cf_section_title.other'),
-				'good' => true,
-				'data_type' => 'bool',
-				'override_endpoint' => 'amp/sxg',
-				'override_result' => [
-					'id' => 'sxg',
-					'editable' => 1
-				],
-				'value_key' => 'sxg_enabled',
-				'overwrite_write_method' => 'PUT',
-			],
-			'amp_real_url' => [
-				'section' => 'speed',
-				'good' => true,
-				'data_type' => 'bool',
-				'override_endpoint' => 'amp/sxg',
-				'override_result' => [
-					'id' => 'amp_real_url',
-					'editable' => 1
-				],
-				'value_key' => 'enabled',
-				'overwrite_write_method' => 'PUT',
-			],
-
 
 			'cache_level' => [
 				'section' => 'caching',
@@ -822,7 +796,6 @@ abstract class CloudflareAbstract extends Repository
 		$api->setSettings($zoneId, ['value' => 'on'], 'settings/speed_brain');
 		$api->setSettings($zoneId, ['value' => 'on'], 'settings/fonts');
 		$api->setSettings($zoneId, ['value' => 'on'], 'argo/tiered_caching');
-		$api->setSettings($zoneId, ['enabled' => true], 'amp/sxg', 'PUT');
 	}
 
 	public function organizeSettings($hostname = null, $hierarchy = true)
@@ -1226,7 +1199,7 @@ abstract class CloudflareAbstract extends Repository
 					}
 					else
 					{
-						// Example:  certificate_transparency, sxg
+						// Example:  certificate_transparency
 						$settingsToUpdate[$options['override_endpoint']][$options['value_key']] = $settings[$id]['value'];
 					}
 
@@ -1756,6 +1729,90 @@ abstract class CloudflareAbstract extends Repository
 		return $return;
 	}
 
+	protected function getRumSites(&$hostname = null)
+	{
+		$accountId = $this->getAccountId($hostname);
+		$api = $this->getApiClass();
+		$result = $api->getRumSites($accountId);
+
+		if ($result === false)
+		{
+			return false;
+		}
+
+		if (empty($result['result']))
+		{
+			return false;
+		}
+
+		return $result['result'];
+	}
+
+	public function getRumSiteStatus(&$hostname = null)
+	{
+		$sites = $this->getRumSites($hostname);
+		if (is_array($sites))
+		{
+			$zoneId = $this->getZoneId($hostname);
+			foreach($sites as $site)
+			{
+				if (!empty($site['ruleset']['zone_tag']) && $site['ruleset']['zone_tag'] === $zoneId)
+				{
+					if (!empty($site['auto_install']))
+					{
+						if (!empty($site['ruleset']['enabled']))
+						{
+							if (!empty($site['ruleset']['lite']))
+							{
+								return [
+									'status' => 'enabled_no_eu',
+									'site' => $site
+								];
+							}
+							return [
+								'status' => 'enabled',
+								'site' => $site
+							];
+						}
+					}
+					return [
+						'status' => 'not_enabled',
+						'site' => $site
+					];
+				}
+			}
+		}
+		return false;
+	}
+
+	public function updateRumSite($hostname = null, $enabled = true, $excludeEurope = false, $autoInstall = true)
+	{
+		$status = $this->getRumSiteStatus($hostname);
+
+		$accountId = $this->getAccountId($hostname);
+		$api = $this->getApiClass();
+
+		if (!empty($status) && !empty($status['site']) && !empty($status['site']['site_tag']))
+		{
+			return $api->updateRumSite(
+				$accountId,
+				$status['site']['site_tag'],
+				!empty($status['site']['ruleset']['zone_tag']) ? $status['site']['ruleset']['zone_tag'] : '',
+				$enabled,
+				$excludeEurope,
+				$autoInstall
+			);
+		}
+
+		return $api->createRumSite(
+			$accountId,
+			$this->getZoneId($hostname),
+			$enabled,
+			$excludeEurope,
+			$autoInstall
+		);
+	}
+
 	public function getTurnstileSites(&$hostname = null)
 	{
 		$accountId = $this->getAccountId($hostname, true);
@@ -1958,6 +2015,62 @@ abstract class CloudflareAbstract extends Repository
 			return $results['result']['id'];
 		}
 		return $results;
+	}
+
+	public function getTokenPermissions($tokenId)
+	{
+		$apiClass = $this->getApiClass();
+
+		$tokenDetails = $apiClass->getTokenDetails($tokenId);
+//		$permissionGroups = $apiClass->getTokenPermissionGroups();
+
+		$tokenPolicies = [];
+		if (!empty($tokenDetails['success']) && $tokenDetails['result']['status'] === 'active' && !empty($tokenDetails['result']['policies']))
+		{
+			foreach($tokenDetails['result']['policies'] as $policy)
+			{
+				if (!empty($policy['effect']) && $policy['effect'] === 'allow')
+				{
+					foreach ($policy['permission_groups'] as $permissionGroup)
+					{
+						$tokenPolicies[$permissionGroup['id']] = $permissionGroup['name'];
+					}
+				}
+			}
+		}
+		return $tokenPolicies;
+
+		/*
+				$neededPermissions = [
+					// Account
+					'1e13c5124ca64b72b1969a67e8829049' => 'Access: Apps and Policies Write',
+					'26bc23f853634eb4bff59983b9064fde' => 'Access: Organizations, Identity Providers, and Groups Read',
+					'b89a480218d04ceb98b4fe57ca29dc1f' => 'Account Analytics Read',
+					'c1fde68c7bcc44588cbb6ddbc16d6480' => 'Account Settings Read',
+					'1af1fa2adc104452b74a9a3364202f20' => 'Account Settings Write',
+					'f3604047d46144d2a3e9cf4ac99d7f16' => 'Allow Request Tracer Read',
+					'7cf72faf220841aabcfdfab81c43c4f6' => 'Billing Read',
+					'df1577df30ee46268f9470952d7b0cdf' => 'Intel Read',
+					'755c05aa014b4f9ab263aa80b8167bd8' => 'Turnstile Sites Write',
+					'bf7481a1826f439697cb59a20b22293e' => 'Workers R2 Storage Write',
+					'e086da7e2179491d91ee5f35b3ca210a' => 'Workers Scripts Write',
+
+					// User
+					'0cc3a61731504c89b99ec1be78b77aa0' => 'API Tokens Read',
+
+					// Zone
+					'9c88f9c5bce24ce7af9a958ba9c504db' => 'Analytics Read',
+					'3b94c49258ec4573b06d51d99b6416c0' => 'Bot Management Write',
+					'e17beae8b8cb423a99b1730f21238bed' => 'Cache Purge',
+					'9ff81cbbe65c400b97d92c3c1033cab6' => 'Cache Settings Write',
+					'43137f8d07884d3198dc0ee77ca6e79b' => 'Firewall Services Write',
+					'ed07f6c337da4195b4e72a1fb2c6bcae' => 'Page Rules Write',
+					'c03055bc037c4ea9afb9a9f104b7b721' => 'SSL and Certificates Write',
+					'e6d2666161e84845a636613608cee8d5' => 'Zone Write',
+					'3030687196b94b638145a3953da2b699' => 'Zone Settings Write',
+					'fb6778dc191143babbfaa57993f1d275' => 'Zone WAF Write',
+				];
+		*/
 	}
 
 	public function timeToHumanReadable($seconds)

@@ -28,7 +28,7 @@ class CachingGuestPage extends AbstractTemplate
 						$cloudflareRepo = new \DigitalPoint\Cloudflare\Repository\Cloudflare();
 						$options = $cloudflareRepo->option(null);
 
-						$cacheTime = intval(@$options['cfPageCachingSeconds']);
+						$cacheTime = (int)@$options['cfPageCachingSeconds'];
 
 						$default = 21600; // 6 hours
 
