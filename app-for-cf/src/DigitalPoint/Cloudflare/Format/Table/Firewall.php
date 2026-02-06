@@ -4,7 +4,7 @@ namespace DigitalPoint\Cloudflare\Format\Table;
 class Firewall extends AbstractTable
 {
 	protected function extra_tablenav($which) {
-		if ($which == 'top')
+		if ($which === 'top')
 		{
 			if (\DigitalPoint\Cloudflare\Helper\Api::$version)
 			{
@@ -43,15 +43,15 @@ class Firewall extends AbstractTable
 
 		if (\DigitalPoint\Cloudflare\Helper\Api::$version)
 		{
-			if ($status != 'enable')
+			if ($status !== 'enable')
 			{
 				$actions['enable-selected'] = esc_html__('Enable', 'app-for-cf');
 			}
-			if ($status != 'disable')
+			if ($status !== 'disable')
 			{
 				$actions['disable-selected'] = esc_html__('Disable', 'app-for-cf');
 			}
-			if ($status != 'delete')
+			if ($status !== 'delete')
 			{
 				$actions['delete-selected'] = esc_html__('Delete', 'app-for-cf');
 			}

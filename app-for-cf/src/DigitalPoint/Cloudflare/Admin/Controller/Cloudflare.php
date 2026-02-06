@@ -198,13 +198,13 @@ class Cloudflare extends Advanced\Cloudflare
 	{
 		$this->assertHasOwnDomain();
 
-		// A bit of a special case for settings action because of how AJAX system works (need to whitelist actions here otherwise you will get stuck in an infinite loop with this method repeating)
-		if(!empty($_REQUEST['action']) && $_REQUEST['action'] === 'easy') /* @phpcs:ignore WordPress.Security.NonceVerification.Recommended */
+		// A bit of a special case for settings action because of how the AJAX system works (need to whitelist actions here otherwise you will get stuck in an infinite loop with this method repeating)
+		if(!empty($_REQUEST['action']) && ($_REQUEST['action'] === 'copy_settings' || $_REQUEST['action'] === 'easy')) /* @phpcs:ignore WordPress.Security.NonceVerification.Recommended */
 		{
 			if ($this->handleAction() === false)
 			{
 				return;
-			};
+			}
 		}
 
 		if ($this->isPost())
@@ -296,7 +296,7 @@ class Cloudflare extends Advanced\Cloudflare
 		{
 			if (!empty($setting['options']['editable']))
 			{
-				if (!empty($setting['defaults']['type']) && $setting['defaults']['type'] == 'checkbox')
+				if (!empty($setting['defaults']['type']) && $setting['defaults']['type'] === 'checkbox')
 				{
 					$newArray = $this->filter($setting['id'], 'array-str');
 					$newValue = [];
@@ -312,7 +312,7 @@ class Cloudflare extends Advanced\Cloudflare
 					}
 				}
 				// For bot fight mode
-				elseif(!empty($setting['defaults']['type']) && $setting['defaults']['type'] == 'array' && !is_array($setting['options']['value']))
+				elseif(!empty($setting['defaults']['type']) && $setting['defaults']['type'] === 'array' && !is_array($setting['options']['value']))
 				{
 					$newValue = $this->filter($setting['id'], $setting['defaults']['data_type'][$setting['defaults']['value_key']]);
 
@@ -324,7 +324,7 @@ class Cloudflare extends Advanced\Cloudflare
 						$settingsToChange[$setting['id']] = $result;
 					}
 				}
-				elseif(!empty($setting['defaults']['type']) && $setting['defaults']['type'] == 'array')
+				elseif(!empty($setting['defaults']['type']) && $setting['defaults']['type'] === 'array')
 				{
 					$newArray = $this->filter($setting['id'], 'array-array-str');
 					$newValue = [];
@@ -337,11 +337,11 @@ class Cloudflare extends Advanced\Cloudflare
 
 							if (!empty($setting['defaults']['data_type'][$key][$subKey]))
 							{
-								if ($setting['defaults']['data_type'][$key][$subKey] == 'bool')
+								if ($setting['defaults']['data_type'][$key][$subKey] === 'bool')
 								{
 									$this->convertBoolean($newValue[$key][$subKey], true);
 								}
-								elseif($setting['defaults']['data_type'][$key][$subKey] == 'int')
+								elseif($setting['defaults']['data_type'][$key][$subKey] === 'int')
 								{
 									$newValue[$key][$subKey] = (int)$newValue[$key][$subKey];
 								}
@@ -363,11 +363,11 @@ class Cloudflare extends Advanced\Cloudflare
 					// Need to watch this in case there's a Cloudflare setting that actually can be set to numeric "1" or "0"
 					if (!empty($setting['defaults']['data_type']))
 					{
-						if ($setting['defaults']['data_type'] == 'bool')
+						if ($setting['defaults']['data_type'] === 'bool')
 						{
 							$this->convertBoolean($newValue, is_bool($setting['defaults']['good']));
 						}
-						elseif($setting['defaults']['data_type'] == 'int')
+						elseif($setting['defaults']['data_type'] === 'int')
 						{
 							$newValue = (int)$newValue;
 
@@ -396,6 +396,58 @@ class Cloudflare extends Advanced\Cloudflare
 		}
 	}
 
+	protected function actionCopySettings()
+	{
+		$this->assertHasOwnApiToken();
+
+		$cloudflareRepo = $this->getCloudflareRepo();
+
+		$zones = $cloudflareRepo->getZones();
+
+		if ($this->isPost())
+		{
+			if (!$zoneCopyFrom = $this->filter('zone', 'str'))
+			{
+				return $this->error($this->phrase('please_select_a_zone'));
+			}
+
+			$validZone = false;
+			foreach ($zones as $zone)
+			{
+				if ($zone['name'] === $zoneCopyFrom)
+				{
+					$validZone = true;
+					break;
+				}
+			}
+
+			if (!$validZone)
+			{
+				return $this->error($this->phrase('please_select_a_zone'));
+			}
+
+			$copyFromSettings = $cloudflareRepo->stripExtraSettingData($cloudflareRepo->organizeSettings($zoneCopyFrom, false)['settings']);
+
+			// Edge case since we are dealing with multiple zones, uncache source.
+			$cloudflareRepo->clearEndpointResults();
+
+			$existingSettings = $cloudflareRepo->stripExtraSettingData($cloudflareRepo->organizeSettings(null, false)['settings']);
+
+			if ($settingChanges = $cloudflareRepo->getSettingsDiff($copyFromSettings, $existingSettings))
+			{
+				$cloudflareRepo->updateSettings($settingChanges);
+			}
+
+			wp_safe_redirect(add_query_arg(['page' => 'app-for-cf'], admin_url('options-general.php')));
+			return false;
+		}
+
+		$viewParams = [
+			'zones' => $zones
+		];
+
+		return $this->view('copySettings', $viewParams);
+	}
 
 	protected function actionEasy()
 	{
@@ -611,7 +663,7 @@ class Cloudflare extends Advanced\Cloudflare
 			return;
 		}
 
-		if ($this->filter('sub_action','str') == 'disable')
+		if ($this->filter('sub_action','str') === 'disable')
 		{
 			$this->updateOption('cfPageCachingSeconds', 0);
 			$this->getCloudflareRepo()->deleteSpecialCacheRule('guest_cache');
@@ -631,7 +683,7 @@ class Cloudflare extends Advanced\Cloudflare
 		$dmarcReport = $cloudflareRepo->getDmarcReports();
 		$cloudflareRepo->getZoneId($hostname, true, true);
 
-		if (!empty($dmarcReport['result']) && !empty($dmarcReport['result']['status']) && $dmarcReport['result']['status'] == 'missing-dmarc-report')
+		if (!empty($dmarcReport['result']) && !empty($dmarcReport['result']['status']) && $dmarcReport['result']['status'] === 'missing-dmarc-report')
 		{
 			/* translators: %1$s = <a href...>, %2$s = </a> */
 			$this->error(sprintf(__('There’s no RUA found in your DMARC record. Add RUA to start receiving DMARC reports. %1$sFix here%2$s.', 'app-for-cf'), sprintf('<a href="%s/%s/%s" target="_blank">', $cloudflareRepo->getDashBaseAccount(), $hostname, 'email/dmarc-management/dmarc-reports/dmarc/wizard'), '</a>'));
@@ -663,7 +715,10 @@ class Cloudflare extends Advanced\Cloudflare
 
 		if ($this->isPost())
 		{
-			$this->getCloudflareRepo()->purgeCache();
+			if (\DigitalPoint\Cloudflare\Base\Pub::getInstance()->applyFilters('app_for_cf_purge_cache', true))
+			{
+				$this->getCloudflareRepo()->purgeCache();
+			}
 			echo wp_kses('<div class="updated notice is-dismissible"><p>' . esc_html($this->phrase('cloudflare_cache_purged')) . '</p></div>',
 				[
 					'div' => [
@@ -720,7 +775,36 @@ class Cloudflare extends Advanced\Cloudflare
 
 	public function actionMultisitesettings()
 	{
-		$viewParams = [];
+		$tokenPermissions = [];
+
+		try {
+
+			$cloudflareRepo = $this->getCloudflareRepo();
+
+			$tokenId = $cloudflareRepo->verifyToken();
+			if (is_string($tokenId))
+			{
+				try
+				{
+					$tokenPermissions = $cloudflareRepo->getTokenPermissions($tokenId);
+				}
+				catch(\Exception $e)
+				{
+					$tokenPermissions = null;
+				}
+			}
+			else
+			{
+				$tokenId = null;
+			}
+		}
+		catch(\Exception $e)
+		{
+		}
+
+		$viewParams = [
+			'tokenPermissions' => $tokenPermissions,
+		];
 		return $this->view('MultisiteSettings', $viewParams);
 	}
 

@@ -5,7 +5,7 @@ namespace DigitalPoint\Cloudflare\Format\Table;
 class CacheRule extends AbstractTable
 {
 	protected function extra_tablenav($which) {
-		if ($which == 'top')
+		if ($which === 'top')
 		{
 			echo '<div class="tablenav-pages">';
 			echo '<a class="button-primary" data-click="overlay" href="' . esc_attr(wp_nonce_url(add_query_arg(array('action' => 'static_content'), esc_url(menu_page_url('app-for-cf_rules', false))))) . '"><span aria-hidden="true"><span class="dashicons dashicons-database-view"></span>' . esc_html__('Cache static content', 'app-for-cf') . '</span></a>
@@ -36,15 +36,15 @@ class CacheRule extends AbstractTable
 
 		if (\DigitalPoint\Cloudflare\Helper\Api::$version)
 		{
-			if ($status != 'enable_cr')
+			if ($status !== 'enable_cr')
 			{
 				$actions['enable_cr-selected'] = esc_html__('Enable', 'app-for-cf');
 			}
-			if ($status != 'disable_cr')
+			if ($status !== 'disable_cr')
 			{
 				$actions['disable_cr-selected'] = esc_html__('Disable', 'app-for-cf');
 			}
-			if ($status != 'delete_cr')
+			if ($status !== 'delete_cr')
 			{
 				$actions['delete_cr-selected'] = esc_html__('Delete', 'app-for-cf');
 			}

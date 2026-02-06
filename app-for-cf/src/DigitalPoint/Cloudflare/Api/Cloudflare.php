@@ -549,6 +549,20 @@ abstract class CloudflareAbstract
 		return $this->makeRequest('GET', sprintf('accounts/%s/challenges/widgets', $accountId), ['query' => $params]);
 	}
 
+	public function createTurnstileWidget($accountId, $name, $domains, $mode = 'managed')
+	{
+		if (is_string($domains))
+		{
+			$domains = [$domains];
+		}
+		$params = [
+			'name' => $name,
+			'mode' => $mode,
+			'domains' => $domains,
+		];
+		return $this->makeRequest('POST', sprintf('accounts/%s/challenges/widgets', $accountId), ['json' => $params]);
+	}
+
 	public function getTurnstileWidget($accountId, $siteKey)
 	{
 		$params = [];
@@ -718,7 +732,7 @@ abstract class CloudflareAbstract
 				{
 					return ['exists' => false];
 				}
-				elseif($response['contentType'] == 'application/xml')
+				elseif($response['contentType'] === 'application/xml')
 				{
 					try {
 						$xml = new \SimpleXMLElement($response['contents']);
@@ -809,7 +823,8 @@ abstract class CloudflareAbstract
 				'timestamp' => strtotime($response['lastModified']),
 				'mimetype' => explode(';', $response['contentType'], 2)[0],
 				'size' => $response['contentLength'],
-				'content' => $response['contents']
+				'content' => $response['contents'],
+				'filename' => !empty($response['contentFile']) ? $response['contentFile'] : '', // for WordPress stream
 			];
 		}
 		{

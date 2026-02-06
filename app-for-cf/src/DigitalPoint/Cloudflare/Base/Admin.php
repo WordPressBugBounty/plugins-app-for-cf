@@ -467,7 +467,7 @@ class Admin
 			/* translators: %1$s = App for Cloudflare®, %2$s = random adjective */
 			$footerText = sprintf(esc_html__('If you like %1$s, please leave us a %2$s rating. A %3$s thank you in advance!', 'app-for-cf'),
 				'<strong>' . esc_html__('App For Cloudflare®', 'app-for-cf') . '</strong>',
-				'<a href="https://wordpress.org/support/plugin/app-for-cf/reviews/?filter=5#new-post" target="_blank">&#9733;&#9733;&#9733;&#9733;&#9733;</a>',
+				'<a href="https://wordpress.org/support/plugin/app-for-cf/reviews/#new-post" target="_blank">&#9733;&#9733;&#9733;&#9733;&#9733;</a>',
 				$_type
 			);
 		}
@@ -541,7 +541,10 @@ class Admin
 				'test'		=> 'plugin_version',
 			];
 
-			$plugins		= apply_filters('all_plugins', get_plugins());
+
+
+
+			$plugins		= Pub::getInstance()->applyFilters('all_plugins', get_plugins());
 			$plugin_updates = get_plugin_updates();
 
 			$plugins_active			= 0;

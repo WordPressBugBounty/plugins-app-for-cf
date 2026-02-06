@@ -1,5 +1,6 @@
 <?php
 namespace DigitalPoint\Cloudflare\Admin\Template;
+
 class CachingGuestPage extends AbstractTemplate
 {
 	use \DigitalPoint\Cloudflare\Traits\WP;
@@ -23,7 +24,8 @@ class CachingGuestPage extends AbstractTemplate
 					<select name="seconds">
 
 						<?php
-						$maxCacheTime = apply_filters('nonce_life', DAY_IN_SECONDS) - 3600;
+
+						$maxCacheTime = \DigitalPoint\Cloudflare\Base\Pub::getInstance()->applyFilters('nonce_life', DAY_IN_SECONDS) - 3600;
 
 						$cloudflareRepo = new \DigitalPoint\Cloudflare\Repository\Cloudflare();
 						$options = $cloudflareRepo->option(null);

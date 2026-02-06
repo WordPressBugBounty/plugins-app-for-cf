@@ -58,6 +58,10 @@ class Ip
 
 	public static function convertIpToBinary($ip)
 	{
+		if (strpos($ip, "\0") !== false)
+		{
+			return false;
+		}
 		return @inet_pton($ip);
 	}
 

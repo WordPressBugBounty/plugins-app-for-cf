@@ -9,7 +9,7 @@ class AbstractView
 	public function __construct($name, $params = [])
 	{
 		$this->name = preg_replace('#[^a-z0-9\-]#i' ,'', $name);
-		$this->params = apply_filters('app_for_cf_view_arguments', $params);
+		$this->params = \DigitalPoint\Cloudflare\Base\Pub::getInstance()->applyFilters('app_for_cf_view_arguments', $params);
 		$this->return = $this->getView();
 	}
 

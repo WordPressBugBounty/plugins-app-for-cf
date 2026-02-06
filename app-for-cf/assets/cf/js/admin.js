@@ -7,19 +7,19 @@
 let CloudflareAppAdmin = {};
 
 {
-    let __ = wp.i18n.__,
+	let __ = wp.i18n.__,
 //		_x = wp.i18n._x,
 //		_n = wp.i18n._n,
 //		_nx = wp.i18n._nx,
-        sprintf = wp.i18n.sprintf;
+		sprintf = wp.i18n.sprintf;
 
-    CloudflareAppAdmin.Admin = function() { this.__construct(); };
-    CloudflareAppAdmin.Admin.prototype =
-        {
-            charts: [],
+	CloudflareAppAdmin.Admin = function() { this.__construct(); };
+	CloudflareAppAdmin.Admin.prototype =
+		{
+			charts: [],
 
-            __construct: function()
-            {
+			__construct: function()
+			{
 				document.addEventListener('DOMContentLoaded', function () {
 					if (document.querySelector('#dp_tabs.nav-tab-wrapper')) {
 						this.init_tabs();
@@ -41,10 +41,10 @@ let CloudflareAppAdmin = {};
 
 					this.__register();
 				}.bind(this));
-            },
+			},
 
-            __register: function ()
-            {
+			__register: function ()
+			{
 				document.querySelectorAll('[data-init="dependent"] .primary:not(.is-reg)').forEach(el => {
 					el.addEventListener('change', this.dependent.bind(this));
 					el.classList.add('is-reg');
@@ -59,10 +59,10 @@ let CloudflareAppAdmin = {};
 					el.addEventListener('click', this.overlay.bind(this));
 					el.classList.add('is-reg');
 				});
-            },
+			},
 
 
-            init_tabs: function() {
+			init_tabs: function() {
 
 				let tab = window.location.hash.slice(5);
 
@@ -80,45 +80,36 @@ let CloudflareAppAdmin = {};
 				document.querySelectorAll('#dp_tabs a').forEach(anchor => {
 					anchor.addEventListener('click', CloudflareAppAdmin._Admin.select_tab);
 				});
-            },
+			},
 
-            select_tab: function(tab) {
+			select_tab: function(tab) {
 				function fadeIn(element, duration = 400) {
+					element.style.transition = 'none !important';
 					element.style.opacity = 0;
 					element.style.display = 'revert';
-					let start = null;
+					element.style.transition = '';
 
-					function step(timestamp) {
-						if (!start) start = timestamp;
-						let progress = timestamp - start;
-						element.style.opacity = Math.min(progress / duration, 1);
-						if (progress < duration) {
-							requestAnimationFrame(step);
-						}
-						else {
-							element.style.opacity = '';
-						}
-					}
+					setTimeout(() => {
+						element.style.opacity = 1
+					}, 0);
 
-					requestAnimationFrame(step);
+					setTimeout(() => {
+						element.style.opacity = '';
+					}, duration);
 				}
 
 				function fadeOut(element, duration = 400) {
+					element.style.transition = 'none !important';
 					element.style.opacity = 1;
-					let start = null;
+					element.style.transition = '';
 
-					function step(timestamp) {
-						if (!start) start = timestamp;
-						let progress = timestamp - start;
-						element.style.opacity = Math.max(1 - progress / duration, 0);
-						if (progress < duration) {
-							requestAnimationFrame(step);
-						} else {
-							element.style.display = 'none';
-						}
-					}
+					setTimeout(() => {
+						element.style.opacity = 0
+					}, 0);
 
-					requestAnimationFrame(step);
+					setTimeout(() => {
+						element.style.display = 'none';
+					}, duration);
 				}
 
 				let tabEl;
@@ -149,7 +140,7 @@ let CloudflareAppAdmin = {};
 
 				const currentTab = document.getElementById('dp_current_tab').value;
 				document.querySelectorAll(`.group_${currentTab}:not(.api_hideable)`).forEach(el => {
-					fadeIn(el, 400);
+					fadeIn(el);
 				});
 
 				const sidebarPro = document.querySelector('#app-for-cf_sidebar .pro');
@@ -157,16 +148,16 @@ let CloudflareAppAdmin = {};
 
 				if (sidebarPro) {
 					if (hasPro) {
-						fadeIn(sidebarPro, 400);
+						fadeIn(sidebarPro);
 					} else {
-						fadeOut(sidebarPro, 400);
+						fadeOut(sidebarPro);
 					}
 				}
-            },
+			},
 
 
-            overlay: function(e)
-            {
+			overlay: function(e)
+			{
 				let url = e.currentTarget.getAttribute('href');
 				if (!url) {
 					url = e.currentTarget.dataset.overlayHref;
@@ -242,20 +233,20 @@ let CloudflareAppAdmin = {};
 					});
 
 				return false;
-            },
+			},
 
-            closeOverlay: function(e)
-            {
+			closeOverlay: function(e)
+			{
 				if (!e.target.closest('.dp_overlay')) {
 					document.querySelectorAll('.dp_overlay').forEach(el => el.remove());
 				}
-            },
+			},
 
 
 
 
-            flashMessage: function(message, timeout, onClose)
-            {
+			flashMessage: function(message, timeout, onClose)
+			{
 				if (typeof timeout === 'undefined') {
 					timeout = 5000;
 				}
@@ -302,12 +293,12 @@ let CloudflareAppAdmin = {};
 						onClose();
 					}
 				}, Math.max(500, timeout) + 500);
-            },
+			},
 
 
 
-            displayMessage: function(message, target = null, isError = false)
-            {
+			displayMessage: function(message, target = null, isError = false)
+			{
 				const currentTarget = target.currentTarget;
 
 				const errorDiv = document.createElement('div');
@@ -355,15 +346,15 @@ let CloudflareAppAdmin = {};
 				});
 
 				document.body.appendChild(errorDiv);
-            },
+			},
 
-            displayError: function(message)
-            {
-                this.displayMessage(message, null, true);
-            },
+			displayError: function(message)
+			{
+				this.displayMessage(message, null, true);
+			},
 
-            displayConfirm: function(e)
-            {
+			displayConfirm: function(e)
+			{
 				e.preventDefault();
 
 				const rowTitle = e.target.closest('tr')?.querySelector('.row-title strong');
@@ -376,11 +367,11 @@ let CloudflareAppAdmin = {};
 				), e, false);
 
 				return false;
-            },
+			},
 
 
-            dependent: function(e)
-            {
+			dependent: function(e)
+			{
 				if (e.target.type === 'radio') {
 					let parent = e.target.closest('form');
 
@@ -418,10 +409,10 @@ let CloudflareAppAdmin = {};
 						});
 					}
 				}
-            },
+			},
 
-            settings: function(e)
-            {
+			settings: function(e)
+			{
 				e.preventDefault();
 
 				let data = {
@@ -451,8 +442,8 @@ let CloudflareAppAdmin = {};
 					});
 
 				return false;
-            },
-        };
+			},
+		};
 
-    CloudflareAppAdmin._Admin = new CloudflareAppAdmin.Admin();
+	CloudflareAppAdmin._Admin = new CloudflareAppAdmin.Admin();
 }

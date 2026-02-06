@@ -117,7 +117,7 @@ class Pub
 		];
 		// Going to use the same filter name as the main Cloudflare plugin since we are literally doing the exact same thing.
 		// Don't force third-party devs to do it twice.
-		$purgeEverythingActions = apply_filters('cloudflare_purge_everything_actions', $purgeEverythingActions);
+		$purgeEverythingActions = static::applyFilters('cloudflare_purge_everything_actions', $purgeEverythingActions);
 		foreach ($purgeEverythingActions as $action)
 		{
 			add_action($action, [$this, 'purgeCacheEverything'], 1048576);
@@ -129,7 +129,7 @@ class Pub
 		];
 		// Same as above... Going to use the same filter name as the main Cloudflare plugin since we are literally doing the exact same thing.
 		// Don't force third-party devs to do it twice.
-		$cloudflarePurgeActions = apply_filters('cloudflare_purge_url_actions', $cloudflarePurgeActions);
+		$cloudflarePurgeActions = static::applyFilters('cloudflare_purge_url_actions', $cloudflarePurgeActions);
 		foreach ($cloudflarePurgeActions as $action)
 		{
 			add_action($action, [$this, 'purgeCacheByPostIds'], 1048576);
@@ -212,10 +212,31 @@ class Pub
 	 */
 	public static function log($app_for_cf_debug)
 	{
-		if (apply_filters( 'app_for_cf_debug_log', defined('WP_DEBUG_LOG') && WP_DEBUG_LOG ))
+		if (static::applyFilters( 'app_for_cf_debug_log', defined('WP_DEBUG_LOG') && WP_DEBUG_LOG ))
 		{
 			error_log( print_r( compact( 'app_for_cf_debug' ), true ) ); /* @phpcs:ignore WordPress.PHP.DevelopmentFunctions.error_log_error_log, WordPress.PHP.DevelopmentFunctions.error_log_print_r */
 		}
+	}
+
+	public static function applyFilters($filter, $value, ...$args)
+	{
+		if (!empty($GLOBALS[$filter]) && $GLOBALS[$filter] instanceof \Closure)
+		{
+			add_filter($filter, $GLOBALS[$filter]);
+			unset($GLOBALS[$filter]);
+		}
+		return apply_filters($filter, $value, ...$args); /* @phpcs:ignore WordPress.NamingConventions.PrefixAllGlobals.DynamicHooknameFound */
+	}
+
+	public function pageCachingCriteria()
+	{
+		return static::applyFilters('app_for_cf_guest_page_cacheable', [
+			'not http.cookie contains "wp-"',
+			'not http.cookie contains "wordpress_"',
+			'not http.cookie contains "comment_"',
+			'not http.cookie contains "woocommerce_"',
+			'not http.request.uri.path contains "/wp-login.php"',
+		]);
 	}
 
 	/*
@@ -227,7 +248,11 @@ class Pub
 
 		if (!$noCache && !empty($_COOKIE) && is_array($_COOKIE))
 		{
-			$noCache = (bool)preg_grep('#^wordpress_|comment_|wp-#si', array_keys($_COOKIE));
+			preg_match_all('#not http.cookie contains "(.*?)"#i', implode('-----', $this->pageCachingCriteria()), $matches);
+			if (!empty($matches[1]))
+			{
+				$noCache = (bool)preg_grep('#^' . implode('|', $matches[1]) . '#si', array_keys($_COOKIE));
+			}
 		}
 
 		$cloudflareAppOptions = $this->cloudflareRepo->option(null);
@@ -236,13 +261,11 @@ class Pub
 
 		if (!$noCache &&
 			$cacheTime > 0 &&
-			!empty($headers['Content-Type']) && substr($headers['Content-Type'], 0, 9) === 'text/html' &&
+			!empty($headers['Content-Type']) && strpos($headers['Content-Type'], 'text/html') === 0 &&
 			!is_404() &&
 			(!defined('WP_DEBUG') || !WP_DEBUG)
 		)
 		{
-			$cacheTime = (int)@$cloudflareAppOptions['cfPageCachingSeconds'];
-
 			$headers['Cache-Control'] = 'max-age=0,s-maxage=' . $cacheTime;
 		}
 
@@ -326,7 +349,7 @@ class Pub
 			}
 
 			$savedPost = get_post($postId);
-			if (!is_a($savedPost, 'WP_Post'))
+			if (!$savedPost instanceof \WP_Post)
 			{
 				continue;
 			}
@@ -388,7 +411,7 @@ class Pub
 			// Archives
 			if ($archive = get_post_type_archive_link($postType))
 			{
-				if ($archive != home_url())
+				if ($archive !== home_url())
 				{
 					$this->purgeUrls[] = $archive;
 				}
@@ -423,7 +446,7 @@ class Pub
 			}
 
 			// Attachments
-			if ($postType == 'attachment')
+			if ($postType === 'attachment')
 			{
 				foreach (get_intermediate_image_sizes() as $size)
 				{
@@ -436,7 +459,7 @@ class Pub
 			}
 		}
 
-		$this->purgeUrls = apply_filters('cloudflare_purge_by_url', $this->purgeUrls, $postId);
+		$this->purgeUrls = static::applyFilters('cloudflare_purge_by_url', $this->purgeUrls, $postId);
 	}
 
 	public static function purgeCacheOnPostStatusChange($new, $old, $post)
@@ -449,7 +472,7 @@ class Pub
 
 	public static function purgeCacheOnCommentStatusChange($new, $old, $comment)
 	{
-		if(!empty($comment->comment_post_ID) && $new != $old && ($new == 'approved' || $old == 'approved'))
+		if(!empty($comment->comment_post_ID) && $new !== $old && ($new === 'approved' || $old === 'approved'))
 		{
 			static::$instance->purgeCacheByPostIds($comment->comment_post_ID);
 		}

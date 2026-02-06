@@ -63,6 +63,11 @@ abstract class CloudflareAbstract extends Repository
 		return false;
 	}
 
+	public function clearEndpointResults()
+	{
+		$this->endpointResults = [];
+	}
+
 	/**
 	 * @return \DigitalPoint\Cloudflare\Api\Cloudflare
 	 */
@@ -953,7 +958,7 @@ abstract class CloudflareAbstract extends Repository
 		$canCache = false;
 		if (!$hostname)
 		{
-			$hostname = parse_url($this->getSiteUrl(), PHP_URL_HOST);
+			$hostname = parse_url($this->getSiteUrl(), PHP_URL_HOST); /* @phpcs:ignore WordPress.WP.AlternativeFunctions.parse_url_parse_url */
 			$canCache = true;
 		}
 
@@ -987,7 +992,7 @@ abstract class CloudflareAbstract extends Repository
 
 				$accountId = $results['result'][0]['account']['id'];
 
-				if ($canCache && ($accountId != $this->option('cfAccountId') || $zoneId != $this->option('cfZoneId') || $this->zone != $this->option('cfZone')))
+				if ($canCache && ($accountId !== $this->option('cfAccountId') || $zoneId !== $this->option('cfZoneId') || $this->zone !== $this->option('cfZone')))
 				{
 					$this->updateOption([
 						'cfAccountId' => $accountId,
@@ -1136,7 +1141,7 @@ abstract class CloudflareAbstract extends Repository
 							}
 						}
 					}
-					$settings['result'][] = is_array($results) && key_exists('result', $results) ? $results['result'] : null;
+					$settings['result'][] = is_array($results) && array_key_exists('result', $results) ? $results['result'] : null;
 				}
 			}
 		}
@@ -1351,7 +1356,7 @@ abstract class CloudflareAbstract extends Repository
 		$zoneId = $this->getZoneId($hostname);
 		$api = $this->getApiClass();
 
-		$splitHostname = explode('.', parse_url($this->getSiteUrl(), PHP_URL_HOST));
+		$splitHostname = explode('.', parse_url($this->getSiteUrl(), PHP_URL_HOST)); /* @phpcs:ignore WordPress.WP.AlternativeFunctions.parse_url_parse_url */
 
 		$possibleHostnames = [];
 		foreach ($splitHostname as $key => $part)
@@ -1447,7 +1452,7 @@ abstract class CloudflareAbstract extends Repository
 							foreach ($action['value'] as $key => $value)
 							{
 								// For Minify (which doesn't exist anymore since it was deprecated)
-								if ($value == 'on')
+								if ($value === 'on')
 								{
 									$action['value_phrase'][] = [
 										'key' => $this->phrase('pagerules.' . $key),
@@ -1457,7 +1462,7 @@ abstract class CloudflareAbstract extends Repository
 								}
 
 								// Forwarding URL
-								elseif($key == 'url') //  || $key == 'status_code'
+								elseif($key === 'url') //  || $key == 'status_code'
 								{
 									$action['value_phrase'][] = [
 										'key' => $value,
@@ -1514,15 +1519,15 @@ abstract class CloudflareAbstract extends Repository
 					{
 						if (!empty($action['mode']))
 						{
-							if($action['mode'] == 'override_origin')
+							if($action['mode'] === 'override_origin')
 							{
 								$actionsOutput['value'] = is_numeric($action['default']) ? $this->timeToHumanReadable($action['default']) : $this->phrase('cacherules.' . $action['default']);
 							}
-							elseif($action['mode'] == 'respect_origin')
+							elseif($action['mode'] === 'respect_origin')
 							{
 								$actionsOutput['value'] = $this->phrase('respect_origin');
 							}
-							elseif($action['mode'] == 'bypass')
+							elseif($action['mode'] === 'bypass')
 							{
 								$actionsOutput['value'] = $this->phrase('pagerules.bypass');
 							}
@@ -1570,7 +1575,7 @@ abstract class CloudflareAbstract extends Repository
 		$dataClass = $this->getClassName('DigitalPoint\Cloudflare\Data\Expression');
 		$dataClass = new $dataClass();
 
-		if ($type == 'r2-bucket')
+		if ($type === 'r2-bucket')
 		{
 			$description = $this->phrase('override_cache_r2');
 			$expression = $dataClass->getSpecialCacheRuleR2($ruleHostname);
@@ -1587,7 +1592,7 @@ abstract class CloudflareAbstract extends Repository
 				'cache' => true,
 			];
 		}
-		elseif ($type == 'css')
+		elseif ($type === 'css')
 		{
 			$description = $this->phrase('cache_xenforo_css');
 			$expression = $dataClass->getSpecialCacheRuleCss();
@@ -1595,7 +1600,7 @@ abstract class CloudflareAbstract extends Repository
 				'cache' => true,
 			];
 		}
-		elseif ($type == 'image_proxy')
+		elseif ($type === 'image_proxy')
 		{
 			$description = $this->phrase('cache_xenforo_image_proxy');
 			$expression = $dataClass->getSpecialCacheRuleImageProxy();
@@ -1611,7 +1616,7 @@ abstract class CloudflareAbstract extends Repository
 				'cache' => true,
 			];
 		}
-		elseif($type == 'guest_cache')
+		elseif($type === 'guest_cache')
 		{
 			$description = $this->phrase('cache_xenforo_guest_pages');
 			$expression = $dataClass->getGuestCache();
@@ -1619,7 +1624,7 @@ abstract class CloudflareAbstract extends Repository
 				'cache' => true,
 			];
 		}
-		elseif($type == 'media_cache')
+		elseif($type === 'media_cache')
 		{
 			$description = $this->phrase('cache_xenforo_media_attachments');
 			$expression = $dataClass->getMediaAttachmentCache();
@@ -1627,7 +1632,7 @@ abstract class CloudflareAbstract extends Repository
 				'cache' => true,
 			];
 		}
-		elseif($type == 'static_content')
+		elseif($type === 'static_content')
 		{
 			$description = $this->phrase('cache_static_content');
 			$expression = $dataClass->getStaticContent();
@@ -1662,11 +1667,11 @@ abstract class CloudflareAbstract extends Repository
 		$dataClass = $this->getClassName('DigitalPoint\Cloudflare\Data\Expression');
 		$dataClass = new $dataClass();
 
-		if ($type == 'guest_cache')
+		if ($type === 'guest_cache')
 		{
 			$expression = $dataClass->getGuestCache();
 		}
-		elseif ($type == 'media_cache')
+		elseif ($type === 'media_cache')
 		{
 			$expression = $dataClass->getMediaAttachmentCache();
 		}
@@ -1692,7 +1697,7 @@ abstract class CloudflareAbstract extends Repository
 	{
 		if (!$hostname)
 		{
-			$hostname = parse_url($this->getSiteUrl(), PHP_URL_HOST);
+			$hostname = parse_url($this->getSiteUrl(), PHP_URL_HOST); /* @phpcs:ignore WordPress.WP.AlternativeFunctions.parse_url_parse_url */
 		}
 
 		$accountId = $this->getAccountId($hostname);
@@ -1961,7 +1966,7 @@ abstract class CloudflareAbstract extends Repository
 					$return['detail']['fail'][$time] = 0;
 				}
 
-				if ($record['dimensions']['dkim'] == 'fail' && $record['dimensions']['spf'] == 'fail')
+				if ($record['dimensions']['dkim'] === 'fail' && $record['dimensions']['spf'] === 'fail')
 				{
 					$return['detail']['fail'][$time] += $record['sum']['totalMatchingMessages'];
 				}
@@ -2005,7 +2010,7 @@ abstract class CloudflareAbstract extends Repository
 	{
 		$api = $this->getApiClass();
 		$results = $api->verifyToken();
-		if (!empty($results['success']) && $results['result']['status'] == 'active')
+		if (!empty($results['success']) && $results['result']['status'] === 'active')
 		{
 			if ($results['result']['id'] != $this->option('cfTokenId'))
 			{
@@ -2096,6 +2101,56 @@ abstract class CloudflareAbstract extends Repository
 			return $this->phrase('x_months', ['months' => round($seconds / 2678400)]);
 		}
 		return '';
+	}
+
+	public function stripExtraSettingData($settings)
+	{
+		foreach($settings as &$setting)
+		{
+			$setting = [
+				'id' => $setting['options']['id'],
+				'value' => $setting['options']['value']
+			];
+		}
+		return $settings;
+	}
+
+	public function getSettingsDiff($settings1, $settings2)
+	{
+		$settings = $this->arrayDiffAssocRecursive($settings1, $settings2);
+		foreach ($settings as $key => &$value)
+		{
+			$value['id'] = $key;
+		}
+		return $settings;
+	}
+
+	protected function arrayDiffAssocRecursive($array1, $array2)
+	{
+		$difference = [];
+		foreach ($array1 as $key => $value)
+		{
+			if (is_array($value))
+			{
+				if (!isset($array2[$key]) || !is_array($array2[$key]))
+				{
+					$difference[$key] = $value;
+				}
+				else
+				{
+					$new_diff = $this->arrayDiffAssocRecursive($value, $array2[$key]);
+					if (!empty($new_diff))
+					{
+						$difference[$key] = $new_diff;
+					}
+				}
+			}
+			elseif (!array_key_exists($key, $array2) || $array2[$key] !== $value)
+			{
+				$difference[$key] = $value;
+			}
+		}
+		return $difference;
 	}
 }
 

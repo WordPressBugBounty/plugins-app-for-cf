@@ -5,9 +5,9 @@ License: GPLv3
 License URI: http://www.gnu.org/licenses/gpl.html
 Tags: cloudflare, caching, performance, security, SEO
 Requires at least: 5.2
-Tested up to: 6.8
+Tested up to: 6.9
 Requires PHP: 5.4.0
-Stable tag: 1.9.6
+Stable tag: 1.9.8
 
 All things Cloudflare (caching, flexible SSL, Turnstile, settings, rules, analytics, media in R2, image transforms [AVIF, WebP], secure admin area).
 
@@ -90,7 +90,7 @@ Supports Cloudflare's Image Transformation service, which allows Media images to
 
 Easily and seamlessly store your WordPress media in the cloud with [Cloudflare R2](https://www.cloudflare.com/developer-platform/r2/). This allows you to offload resources (both bandwidth and disk space) from your server. The **first 10GB is free**, and only costs $0.015 per GB thereafter (ex. if you had 100GB of media, it would cost $1.35 per month to store it in the cloud).
 
-Includes ability to migrate existing media from local filesystem to R2 (or from R2 to local filesystem). Works with individual media, or all media in bulk (includes web-based migration as well as a shell/WP-CLI option).
+Includes the ability to migrate existing media from local filesystem to R2 (or from R2 to local filesystem). Works with individual media, or all media in bulk (includes web-based migration as well as a shell/WP-CLI option).
 
 **Automatically convert uploaded JPG or PNG images to WebP [Premium]**
 
@@ -127,11 +127,12 @@ Backups can be restored to different zones (for example if you had extensive con
 
 * API calls are done exclusively through API Tokens (with the [minimum required permissions](https://appforcf.com/threads/permissions-needed-for-app-for-cloudflare%C2%AE.3/?utm_source=readme&utm_medium=wordpress&utm_campaign=plugin)) and **not** a Global API Key. Global API Keys are an incredibly bad idea from a security standpoint.
 * Ability to purge Cloudflare cache from WordPress admin (or via WP-CLI).
+* Ability to copy Cloudflare zone settings from a different zone on the same Cloudflare account.
 * Cached pages are automatically purged when a post/page is edited (just the necessary pages, not all pages). Stale content is not served to users.
 * Ability to designate an individual admin user to manage settings (maybe you don't want all admins to have the ability to change things in Cloudflare).
-* Ability to use WordPress filters to add your own logic to things (for example maybe you don't want to cache a certain page or post for whatever reason).
-* All JavaScript is native (no dependencies on jQuery or anything else)
-* No third-party PHP libraries used (no dependencies on other libs)
+* Ability to use WordPress filters to add your own logic to things (for example, maybe you don't want to cache a certain page or post for whatever reason).
+* All JavaScript is native (no dependencies on jQuery or anything else).
+* No third-party PHP libraries used (no dependencies on other libs).
 
 == Installation ==
 
@@ -210,11 +211,11 @@ Yes, please do! You can find the suggestion area [over here](https://appforcf.co
 17. R2 configuration is simple/automatic.
 18. DMARC reporting allows you to see entities sending email on your behalf.
 19. Cloudflare Purge Cache is available from within the WordPress admin area.
-20. An HTTP request trace tool allows you to simulate an HTTP request passing through Cloudflare's network.  This allows you to see which products and rules are triggering actions on a request.
+20. An HTTP request trace tool allows you to simulate an HTTP request passing through Cloudflare's network. This allows you to see which products and rules are triggering actions on a request.
 21. An IP address lookup tool allows you to get some basic info about any IP address (works with IPv4 as well as IPv6 addresses).
 22. Lookup info about any domain.
 23. Get registration info about any domain.
-24. The Pro version allows you to backup and restore some Cloudflare settings.
+24. The Pro version allows you to back up and restore some Cloudflare settings.
 25. Media stored in R2 shows an orange cloud in the media browser.
 26. Move individual media to/from R2.
 27. Move all media in bulk to/from R2.
@@ -222,6 +223,25 @@ Yes, please do! You can find the suggestion area [over here](https://appforcf.co
 29. For multisite networks, you can optionally use a single R2 bucket to store the media across all your sites.
 
 == Changelog ==
+= 1.9.8 (2025-12-22) =
+* Added internal framework support for streaming R2 objects when copying from/to the local filesystem
+* Added `app_for_cf_purge_cache` filter to control (or piggyback) cache purging
+* Internal `inet_pton()` usage change (compatibility with a change in PHP 8.5.1, 8.4.16, 8.3.29, 8.2.30, 8.1.34)
+
+= 1.9.7 (2025-12-09) =
+* Added the ability to copy Cloudflare zone settings from a different zone on the same Cloudflare account
+* Fixed issue where ability to set multisite, network-wide API token was not visible
+* Added the ability to see existing API token permissions in network admin (for multisite networks)
+
+= 1.9.6.2 (2025-11-19) =
+* Added `app_for_cf_guest_page_cacheable` filter to allow third-party plugins to control page eligibility for guest page caching
+* Added the ability to optionally add WordPress filters directly to `wp-config.php` file (for those that don't want to use a plugin or other mechanism to do add filters), this is done by adding a Closure object to $GLOBALS['filter_name'] within `wp-config.php`
+* Updated charting library (Chart.js) to 4.5.1
+
+= 1.9.6.1 (2025-10-17) =
+* Replaced JavaScript fade animations with CSS transitions
+* Fixed issue with a missing method used to create a Turnstile widget
+
 = 1.9.6 (2025-09-23) =
 * Added support for Cloudflare web analytics (requires two additional API permissions for your token (`Account.Account Settings: Read` & `Account.Account Settings: Edit`), for those upgrading from a previous version)
 * Token permissions are automatically checked (requires an additional API permissions for your token (`User.API Token: Read`), for those upgrading from a previous version)
@@ -230,14 +250,14 @@ Yes, please do! You can find the suggestion area [over here](https://appforcf.co
 * Removed option: Speed -> Other -> AMP Real URL (deprecated as of Oct 20, 2025)
 
 = 1.9.5 (2025-09-08) =
-* Added the ability to purge cache via WP-CLI: wp app-for-cf purge-cache
+* Added the ability to purge cache via WP-CLI: `wp app-for-cf purge-cache`
 * Added Turnstile support for [WooCommerce](https://wordpress.org/plugins/woocommerce/)
 * Added Turnstile support for [Contact Form 7](https://wordpress.org/plugins/contact-form-7/)
 * Added Turnstile support for [HTML Forms](https://wordpress.org/plugins/html-forms/)
 * Added Turnstile support for [MetForm](https://wordpress.org/plugins/metform/)
 * Added Turnstile support for [WPForms](https://wordpress.org/plugins/wpforms-lite/)
 * Enabling the Image Transformations option will automatically enable Image Transformations in Cloudflare for your zone
-* Site URL can be overridden with the CLOUDFLARE_SITE_URL PHP named constant: define('CLOUDFLARE_SITE_URL', 'https://example.com');
+* Site URL can be overridden with the CLOUDFLARE_SITE_URL PHP named constant: `define('CLOUDFLARE_SITE_URL', 'https://example.com');`
 * Fixed an issue with Image Transforms for sites that use subdirectories for WordPress installation (rather than root of the domain)
 * Guest page caching works better with WooCommerce (checking for woocommerce_* cookies now)
 * Removed option: Speed -> Image Optimization -> Mirage (deprecated as of Sept 15, 2025)

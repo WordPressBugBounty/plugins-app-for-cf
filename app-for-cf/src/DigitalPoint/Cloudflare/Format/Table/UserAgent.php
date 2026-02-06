@@ -27,15 +27,15 @@ class UserAgent extends AbstractTable
 
 		if (\DigitalPoint\Cloudflare\Helper\Api::$version)
 		{
-			if ($status != 'delete_ua')
+			if ($status !== 'delete_ua')
 			{
 				$actions['enable_ua-selected'] = esc_html__('Enable', 'app-for-cf');
 			}
-			if ($status != 'disable_ua')
+			if ($status !== 'disable_ua')
 			{
 				$actions['disable_ua-selected'] = esc_html__('Disable', 'app-for-cf');
 			}
-			if ($status != 'delete_ua')
+			if ($status !== 'delete_ua')
 			{
 				$actions['delete_ua-selected'] = esc_html__('Delete', 'app-for-cf');
 			}

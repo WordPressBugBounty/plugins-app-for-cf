@@ -68,17 +68,35 @@ class Settings extends AbstractTemplate
                 </tr>
             </table>
         </div>
+		<div class="alignright">
+			<table class="form-table">
+				<tr>
+					<td>
+						<?php
+						echo '<a class="button-primary" data-click="overlay" href="' . esc_attr(wp_nonce_url(add_query_arg(['action' => 'easy'], esc_url(menu_page_url('app-for-cf_settings', false))))) . '"><span aria-hidden="true"><span class="dashicons dashicons-welcome-learn-more"></span>' . esc_html__('Easy config', 'app-for-cf') . '</span></a>';
+						?>
+					</td>
+				</tr>
+			</table>
+		</div>
+		<?php
+			if ($helper::hasOwnApiToken())
+			{
+		?>
         <div class="alignright">
             <table class="form-table">
                 <tr>
                     <td>
                         <?php
-                            echo '<a class="button-primary" data-click="overlay" href="' . esc_attr(wp_nonce_url(add_query_arg(['action' => 'easy'], esc_url(menu_page_url('app-for-cf_settings', false))))) . '"><span aria-hidden="true"><span class="dashicons dashicons-welcome-learn-more"></span>' . esc_html__('Easy config', 'app-for-cf') . '</span></a>';
+                            echo '<a class="button-primary" data-click="overlay" href="' . esc_attr(wp_nonce_url(add_query_arg(['action' => 'copy_settings'], esc_url(menu_page_url('app-for-cf_settings', false))))) . '"><span aria-hidden="true"><span class="dashicons dashicons-migrate"></span>' . esc_html__('Copy from...', 'app-for-cf') . '</span></a>';
                         ?>
                     </td>
                 </tr>
             </table>
         </div>
+		<?php
+			}
+		?>
     </div>
     <?php
     }
@@ -438,7 +456,7 @@ class Settings extends AbstractTemplate
 								]
 							];
 
-							$turnstileFor = apply_filters('app_for_cf_turnstile_forms', $turnstileFor);
+							$turnstileFor = \DigitalPoint\Cloudflare\Base\Pub::getInstance()->applyFilters('app_for_cf_turnstile_forms', $turnstileFor);
 
 							echo '<div class="dependent turnstileFor">';
 							foreach ($turnstileFor as $category => $options)

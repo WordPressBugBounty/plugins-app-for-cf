@@ -4,6 +4,8 @@ namespace DigitalPoint\Cloudflare\Traits;
 
 trait WP
 {
+	protected $r2BodyParam = 'body_resource';
+
 	protected $timeout = 15;
 
 	protected function getClassName($className)
@@ -157,9 +159,19 @@ trait WP
 			{
 				$args['headers'] = $options['headers'];
 			}
+			if (!empty($options['stream']))
+			{
+				$args['stream'] = $options['stream'];
+			}
 			if (!empty($options['json']))
 			{
 				$args['body'] = wp_json_encode($options['json']);
+			}
+			elseif (!empty($options['body_resource']) && is_resource($options['body_resource']))
+			{
+				$args['headers']['Content-Length'] = fstat($options['body_resource'])['size'];
+				$args['headers']['Transfer-Encoding'] = null;
+				$args['headers']['Content-Type'] = ''; // WordPress sets a default (and invalid Content-Type in the case of uploading R2 objects), setting it blank prevents this.
 			}
 			elseif (!empty($options['body']))
 			{
@@ -170,7 +182,6 @@ trait WP
 			try
 			{
 				$response = wp_remote_request($url, $args);
-
 				if ($response instanceof \WP_Error)
 				{
 					$error = $response->get_error_code() . ': ' . $response->get_error_message();
@@ -271,6 +282,7 @@ trait WP
 			'contentType' => !empty($response['headers']['Content-Type']) ? $response['headers']['Content-Type'] : '',
 			'contentLength' => !empty($response['headers']['Content-Length']) ? $response['headers']['Content-Length'] : '',
 			'lastModified' => !empty($response['headers']['Last-Modified']) ? $response['headers']['Last-Modified'] : '',
+			'contentFile' => !empty($response['filename']) ? $response['filename'] : '',
 		];
 	}
 
@@ -548,6 +560,9 @@ trait WP
 
 				'cloudflare_turnstile_site_exists' => __('Your Cloudflare account already has a Turnstile site for this domain.', 'app-for-cf'),
 				'cloudflare_turnstile_site_exists_view_existing' => __('View existing Site Key and Secret Key', 'app-for-cf'),
+
+				'please_select_a_zone' => __('Please select a zone.', 'app-for-cf'),
+
 			];
 		}
 

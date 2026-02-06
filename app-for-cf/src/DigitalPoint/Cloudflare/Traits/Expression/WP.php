@@ -11,7 +11,7 @@ trait WP
 
 	public function getGuestCache()
 	{
-		return '(not http.cookie contains "wp-" and not http.cookie contains "wordpress_" and not http.cookie contains "comment_" and not http.cookie contains "woocommerce_" and not http.request.uri.path contains "/wp-login.php")';
+		return '(' . implode(' and ', \DigitalPoint\Cloudflare\Base\Pub::getInstance()->pageCachingCriteria()) . ')';
 	}
 
 	public function getBlockInternal()
@@ -30,7 +30,7 @@ trait WP
 
 		$expression = implode(' or ', $expression);
 
-		if ($applyTo == 'registration')
+		if ($applyTo === 'registration')
 		{
 			$expression = "($expression) and (http.request.full_uri contains \"" . site_url('wp-login.php?action=register') . "\")";
 		}

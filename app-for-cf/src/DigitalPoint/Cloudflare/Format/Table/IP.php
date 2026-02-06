@@ -27,7 +27,7 @@ class IP extends AbstractTable
 
 		if (\DigitalPoint\Cloudflare\Helper\Api::$version)
 		{
-			if ($status != 'delete_ip')
+			if ($status !== 'delete_ip')
 			{
 				$actions['delete_ip-selected'] = esc_html__('Delete', 'app-for-cf');
 			}

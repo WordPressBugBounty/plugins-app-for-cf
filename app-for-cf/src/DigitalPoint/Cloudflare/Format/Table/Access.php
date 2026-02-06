@@ -37,7 +37,7 @@ class Access extends AbstractTable
 
 		if (\DigitalPoint\Cloudflare\Helper\Api::$version)
 		{
-			if ($status != 'delete_ac')
+			if ($status !== 'delete_ac')
 			{
 				$actions['delete_ac-selected'] = esc_html__('Delete', 'app-for-cf');
 			}
@@ -97,7 +97,7 @@ class Access extends AbstractTable
 		{
 			foreach ($item as $type => $value)
 			{
-				if ($type == 'everyone')
+				if ($type === 'everyone')
 				{
 					echo '<li>' . esc_html($this->phrase('everyone')) . '</li>';
 				}

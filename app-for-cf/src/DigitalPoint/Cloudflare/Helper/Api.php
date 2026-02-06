@@ -16,9 +16,6 @@ class Api
 			set_transient(static::$transientKey, ['d' => time(), 'l' => null, 'v' => false]);
 			return false;
 		}
-		else
-		{
-			return (!empty($cloudflareAppInternal['v']));
-		}
+		return (!empty($cloudflareAppInternal['v']));
 	}
 }

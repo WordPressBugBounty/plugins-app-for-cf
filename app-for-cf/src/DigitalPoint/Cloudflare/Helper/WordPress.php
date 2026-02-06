@@ -7,7 +7,7 @@ class WordPress
 	public static function isLocaleSupported(&$locales = [])
 	{
 		$locales = array('en_US');
-		return (array_search(get_locale(), $locales) !== false ? true : false);
+		return in_array(get_locale(), $locales);
 	}
 
 	public static function addAsset($type = 'css')
@@ -22,7 +22,7 @@ class WordPress
 		}
 		elseif($type === 'chart')
 		{
-			wp_enqueue_script('app-for-cf_chartjs_js', APP_FOR_CLOUDFLARE_PLUGIN_URL . 'assets/chartjs/chart.umd.js', [], '4.5.0', ['in_footer' => true]);
+			wp_enqueue_script('app-for-cf_chartjs_js', APP_FOR_CLOUDFLARE_PLUGIN_URL . 'assets/chartjs/chart.umd.js', [], '4.5.1', ['in_footer' => true]);
 			wp_enqueue_script('app-for-cf_chart_js', APP_FOR_CLOUDFLARE_PLUGIN_URL . 'assets/cf/js/chart.min.js', [], APP_FOR_CLOUDFLARE_VERSION, ['in_footer' => true]);
 		}
 		elseif($type === 'notice')
@@ -53,7 +53,7 @@ class WordPress
 				$defaults = \DigitalPoint\Cloudflare\Setup::defaults();
 			}
 
-			$checkLicense = !empty($input['cfLicenseKey']) && (empty($defaults['cfLicenseKey']) || $input['cfLicenseKey'] != $defaults['cfLicenseKey']);
+			$checkLicense = !empty($input['cfLicenseKey']) && (empty($defaults['cfLicenseKey']) || $input['cfLicenseKey'] !== $defaults['cfLicenseKey']);
 		}
 		else
 		{
@@ -193,7 +193,7 @@ class WordPress
 			return true;
 		}
 
-		if (is_multisite() && !is_main_site() && defined('DOMAIN_CURRENT_SITE'))
+		if (defined('DOMAIN_CURRENT_SITE') && is_multisite() && !is_main_site())
 		{
 			$siteHostname = strtolower(wp_parse_url(site_url(), PHP_URL_HOST));
 			$networkDomain = '.' . strtolower(DOMAIN_CURRENT_SITE);

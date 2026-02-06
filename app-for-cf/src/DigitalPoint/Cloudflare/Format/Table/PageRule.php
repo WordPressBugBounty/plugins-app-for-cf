@@ -5,7 +5,7 @@ namespace DigitalPoint\Cloudflare\Format\Table;
 class PageRule extends AbstractTable
 {
 	protected function extra_tablenav($which) {
-		if ($which == 'top')
+		if ($which === 'top')
 		{
 			echo '<div class="tablenav-pages">';
 			echo '<a class="button-secondary" href="' . esc_url_raw($this->_args['dash_base']) . '/rules" target="_blank"><span aria-hidden="true"><span class="dashicons dashicons-external"></span>' . esc_html__('View in Cloudflare', 'app-for-cf') . '</span></a>
@@ -35,15 +35,15 @@ class PageRule extends AbstractTable
 
 		if (\DigitalPoint\Cloudflare\Helper\Api::$version)
 		{
-			if ($status != 'enable_pr')
+			if ($status !== 'enable_pr')
 			{
 				$actions['enable_pr-selected'] = esc_html__('Enable', 'app-for-cf');
 			}
-			if ($status != 'disable_pr')
+			if ($status !== 'disable_pr')
 			{
 				$actions['disable_pr-selected'] = esc_html__('Disable', 'app-for-cf');
 			}
-			if ($status != 'delete_pr')
+			if ($status !== 'delete_pr')
 			{
 				$actions['delete_pr-selected'] = esc_html__('Delete', 'app-for-cf');
 			}
@@ -54,7 +54,7 @@ class PageRule extends AbstractTable
 
 	public function single_row($item)
 	{
-		echo '<tr class="' . ($item['status'] == 'active' ? 'active' : 'paused') . '">';
+		echo '<tr class="' . ($item['status'] === 'active' ? 'active' : 'paused') . '">';
 		$this->single_row_columns($item);
 		echo '</tr>';
 	}
@@ -69,7 +69,7 @@ class PageRule extends AbstractTable
 
 			$url = $this->getCurrentUrl();
 
-			if ($item['status'] == 'disabled')
+			if ($item['status'] === 'disabled')
 			{
 				echo '<span class="enable"><a href="' . esc_attr(wp_nonce_url(add_query_arg(['id' => $item['id'], 'action' => 'enable_pr'], $url))) . '" title="' . esc_html__('Enable', 'app-for-cf') . '">' . esc_html__('Enable', 'app-for-cf') . '</a></span>';
 			}
