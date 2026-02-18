@@ -820,4 +820,52 @@ class Cloudflare extends Advanced\Cloudflare
 		}
 	}
 
+	protected function assertHasOwnDomain()
+	{
+		if (!\DigitalPoint\Cloudflare\Helper\WordPress::hasOwnDomain())
+		{
+			die ('<div id="message" class="error notice"><p>' . esc_html__('Feature requires your your site to have its own domain.', 'app-for-cf') . '</p></div></body></html>');
+		}
+	}
+
+	protected function assertHasOwnApiToken()
+	{
+		if (!\DigitalPoint\Cloudflare\Helper\WordPress::hasOwnApiToken())
+		{
+			/* translators: %1$s = <a href...>, %2$s = </a> */
+			die ('<div id="message" class="error notice"><p>' . sprintf(esc_html__('Feature requires your your site to have its own %1$sCloudflare API token%2$s.', 'app-for-cf'), sprintf('<a href="%1$s">', esc_url(add_query_arg(['page' => 'app-for-cf'], admin_url('options-general.php')))), '</a>') . '</p></div></body></html>');
+		}
+	}
+
+	protected function assertHasKey($key)
+	{
+		if (empty($_REQUEST[$key])) /* @phpcs:ignore WordPress.Security.NonceVerification.Recommended */
+		{
+			/* translators: %1$s = <strong>, %2$s = </strong> */
+			die ('<div id="message" class="error notice"><p>' . sprintf(esc_html__('Missing: %1$s%3$s%2$s', 'app-for-cf'), '<strong>', '</strong>', esc_html($key)) . '</p></div></body></html>');
+		}
+	}
+
+	protected function assertHasChecked()
+	{
+		if(empty($_REQUEST['checked'])) /* @phpcs:ignore WordPress.Security.NonceVerification.Recommended */
+		{
+			die ('<div id="message" class="error notice"><p>' . esc_html__('No items selected.', 'app-for-cf') . '</p></div></body></html>');
+		}
+	}
+
+	protected function assertCanZip()
+	{
+		if (!class_exists('ZipArchive'))
+		{
+			/* translators: %1$s = <code>, %2$s = </code> */
+			die ('<div id="message" class="error notice"><p>' . sprintf(esc_html__('Cloudflare backup function is only supported if you have %1$sZipArchive%2$s support. You may need to ask your host to enable this.', 'app-for-cf'), '<code>', '</code>') . '</p></div></body></html>');
+		}
+	}
+
+	protected function getCloudflareRepo()
+	{
+		return new \DigitalPoint\Cloudflare\Repository\Cloudflare();
+	}
+
 }

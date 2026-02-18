@@ -179,7 +179,7 @@ class WordPress
 
 		if (!empty($input['cfImagesTransform']) && !empty($input['cfZoneId']))
 		{
-			self::getApi()->setSettings($input['cfZoneId'], ['value' => 'on'], 'settings/transformations');
+			static::getApi()->setSettings($input['cfZoneId'], ['value' => 'on'], 'settings/transformations');
 		}
 
 		return $input;

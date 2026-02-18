@@ -16,7 +16,6 @@ abstract class AbstractTemplate
 
 	protected function addAsset($type = 'css')
 	{
-		\DigitalPoint\Cloudflare\Helper\WordPress::addAsset($type);
+		call_user_func('\\DigitalPoint\\' . preg_replace('#^.*?\\\\(.*?)\\\\.*$#', '$1', __NAMESPACE__) . '\\Helper\\WordPress::addAsset', $type);
 	}
-
 }

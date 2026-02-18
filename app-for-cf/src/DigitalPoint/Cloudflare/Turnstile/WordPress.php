@@ -1,7 +1,5 @@
 <?php
-
 namespace DigitalPoint\Cloudflare\Turnstile;
-
 class WordPress extends AbstractTurnstile
 {
 	protected $verifyRan = false;
@@ -87,6 +85,12 @@ class WordPress extends AbstractTurnstile
 
 	public function wpmuValidateUserSignup($result)
 	{
+		// Bypass if they are already logged in (creating a user in the admin area)
+		if (current_user_can('manage_options'))
+		{
+			return $result;
+		}
+
 		$turnstileResponse = $this->getTurnstileResponse();
 
 		if (!$turnstileResponse)

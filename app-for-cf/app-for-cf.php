@@ -3,12 +3,12 @@
  * App for Cloudflare® plugin.
  *
  * @package   DigitalPoint\Cloudflare
- * @copyright Copyright (C) 2022-2025, Digital Point - app-help@appforcf.com
+ * @copyright Copyright (C) 2022-2026, Digital Point - app-help@appforcf.com
  * @license   http://www.gnu.org/licenses/gpl-3.0.html GNU General Public License, version 3 or higher
  *
  * @wordpress-plugin
  * Plugin Name: App for Cloudflare®
- * Version:     1.9.8
+ * Version:     1.9.9
  * Plugin URI:  https://appforcf.com/?utm_source=uri&utm_medium=wordpress&utm_campaign=plugin
  * Description: Allows you to manage your Cloudflare account/zone from within WordPress. Options to do most everything (control settings, caching of HTML pages and static assets, protect admin area with Zero Trust Network Access, store media in the cloud with R2, rule management, firewall management, DMARC management, view analytics, etc).
  * Author:      Digital Point
@@ -34,7 +34,7 @@
 
 if (!defined( 'ABSPATH')) exit;
 
-define('APP_FOR_CLOUDFLARE_VERSION', '1.9.8');
+define('APP_FOR_CLOUDFLARE_VERSION', '1.9.9');
 define('APP_FOR_CLOUDFLARE_MINIMUM_WP_VERSION', '5.2');  // Late static binding in PHP 5.3 and traits require PHP 5.4.  See:  https://make.wordpress.org/core/handbook/references/php-compatibility-and-wordpress-versions/
 define('APP_FOR_CLOUDFLARE_PRODUCT_URL', 'https://appforcf.com/');
 define('APP_FOR_CLOUDFLARE_PRO_PRODUCT_URL', 'https://appforcf.com/items/app-for-cloudflare%C2%AE-pro.1/');

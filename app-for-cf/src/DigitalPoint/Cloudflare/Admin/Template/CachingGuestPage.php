@@ -34,11 +34,11 @@ class CachingGuestPage extends AbstractTemplate
 
 						$default = 21600; // 6 hours
 
-						foreach ([300, 900, 1800, 3600, 7200, 14400, 21600, 43200, 86400] as $seconds)
+						foreach (\DigitalPoint\Cloudflare\Base\Pub::getInstance()->applyFilters('app_for_cf_cache_times', [300, 900, 1800, 3600, 7200, 14400, 21600, 43200, 86400]) as $seconds)
 						{
 							if ($seconds < $maxCacheTime)
 							{
-								echo '<option value="' . esc_attr($seconds) . '"' . ((!$cacheTime && $seconds == $default) || $seconds == $cacheTime ? ' selected' : '') . '>' . esc_html($cloudflareRepo->timeToHumanReadable($seconds)) . '</option>';
+								echo '<option value="' . esc_attr($seconds) . '"' . ((!$cacheTime && $seconds === $default) || $seconds === $cacheTime ? ' selected' : '') . '>' . esc_html($cloudflareRepo->timeToHumanReadable($seconds)) . '</option>';
 							}
 						}
 

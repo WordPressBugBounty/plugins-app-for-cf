@@ -4,6 +4,8 @@ namespace DigitalPoint\Cloudflare\Admin\Controller;
 
 class AbstractController
 {
+	use Traits\Phrase;
+
 	public function __construct()
 	{
 		if (!empty($_REQUEST['action2']) && strlen($_REQUEST['action2']) > 2) /* @phpcs:ignore WordPress.Security.NonceVerification.Recommended, WordPress.Security.ValidatedSanitizedInput.MissingUnslash, WordPress.Security.ValidatedSanitizedInput.InputNotSanitized */
@@ -31,24 +33,23 @@ class AbstractController
 
 			if (method_exists($this, $method))
 			{
-				if (strtolower(__FUNCTION__) == strtolower($method))
+				if (strtolower(__FUNCTION__) === strtolower($method))
 				{
-					die(esc_html__('Invalid action', 'app-for-cf'));
+					die(esc_html($this->phrase('invalid_action')));
 				}
 
-				return call_user_func([$this, $method]);
+				return $this->$method();
 			}
 			else
 			{
-				/* translators: %1$s = <strong>, %2$s = </strong> */
-				die ('<div id="message" class="error notice"><p>' . sprintf(esc_html__('Action not found: %1$s%3$s%2$s.', 'app-for-cf'), '<strong>', '</strong>', esc_html($method)) . '</p></div></body></html>');
+				die ('<div id="message" class="error notice"><p>' . sprintf(esc_html($this->phrase('action_not_found')), '<strong>', '</strong>', esc_html($method)) . '</p></div></body></html>');
 			}
 		}
 	}
 
 	protected function view($name, array $args = [])
 	{
-		return \DigitalPoint\Cloudflare\Base\Admin::getInstance()->view($name, $args);
+		return call_user_func('\\DigitalPoint\\' . preg_replace('#^.*?\\\\(.*?)\\\\.*$#', '$1', __NAMESPACE__) . '\\Base\\Admin::getInstance')->view($name, $args);
 	}
 
 	protected function isPost()
@@ -137,11 +138,11 @@ class AbstractController
 								foreach ($item as $itemKey => $itemItem)
 								{
 									$value[sanitize_key(wp_unslash($key))][sanitize_key(wp_unslash($itemKey))] = sanitize_text_field(wp_unslash($itemItem));
-									if ($value[sanitize_key(wp_unslash($key))][sanitize_key(wp_unslash($itemKey))] == 'on')
+									if ($value[sanitize_key(wp_unslash($key))][sanitize_key(wp_unslash($itemKey))] === 'on')
 									{
 										$value[sanitize_key(wp_unslash($key))][sanitize_key(wp_unslash($itemKey))] = true;
 									}
-									elseif($value[sanitize_key(wp_unslash($key))][sanitize_key(wp_unslash($itemKey))] == 'off')
+									elseif($value[sanitize_key(wp_unslash($key))][sanitize_key(wp_unslash($itemKey))] === 'off')
 									{
 										$value[sanitize_key(wp_unslash($key))][sanitize_key(wp_unslash($itemKey))] = false;
 									}
@@ -151,65 +152,16 @@ class AbstractController
 					}
 				}
 				return $value;
-			}
+		}
 
 		return null;
-	}
-
-	protected function assertHasOwnDomain()
-	{
-		if (!\DigitalPoint\Cloudflare\Helper\WordPress::hasOwnDomain())
-		{
-			die ('<div id="message" class="error notice"><p>' . esc_html__('Feature requires your your site to have its own domain.', 'app-for-cf') . '</p></div></body></html>');
-		}
-	}
-
-	protected function assertHasOwnApiToken()
-	{
-		if (!\DigitalPoint\Cloudflare\Helper\WordPress::hasOwnApiToken())
-		{
-			/* translators: %1$s = <a href...>, %2$s = </a> */
-			die ('<div id="message" class="error notice"><p>' . sprintf(esc_html__('Feature requires your your site to have its own %1$sCloudflare API token%2$s.', 'app-for-cf'), sprintf('<a href="%1$s">', esc_url(add_query_arg(['page' => 'app-for-cf'], admin_url('options-general.php')))), '</a>') . '</p></div></body></html>');
-		}
 	}
 
 	protected function assertNonce($action = -1)
 	{
 		if (empty($_REQUEST['_wpnonce']) || !wp_verify_nonce(sanitize_text_field(wp_unslash($_REQUEST['_wpnonce'])), $action))
 		{
-			die ('<div id="message" class="error notice"><p>' . esc_html__('Security error, go back, reload and retry.', 'app-for-cf') . '</p></div></body></html>');
+			die ('<div id="message" class="error notice"><p>' . esc_html($this->phrase('security_error')) . '</p></div></body></html>');
 		}
-	}
-
-	protected function assertHasKey($key)
-	{
-		if (empty($_REQUEST[$key])) /* @phpcs:ignore WordPress.Security.NonceVerification.Recommended */
-		{
-			/* translators: %1$s = <strong>, %2$s = </strong> */
-			die ('<div id="message" class="error notice"><p>' . sprintf(esc_html__('Missing: %1$s%3$s%2$s', 'app-for-cf'), '<strong>', '</strong>', esc_html($key)) . '</p></div></body></html>');
-		}
-	}
-
-	protected function assertHasChecked()
-	{
-		if(empty($_REQUEST['checked'])) /* @phpcs:ignore WordPress.Security.NonceVerification.Recommended */
-		{
-			die ('<div id="message" class="error notice"><p>' . esc_html__('No items selected.', 'app-for-cf') . '</p></div></body></html>');
-		}
-	}
-
-	protected function assertCanZip()
-	{
-		if (!class_exists('ZipArchive'))
-		{
-			/* translators: %1$s = <code>, %2$s = </code> */
-			die ('<div id="message" class="error notice"><p>' . sprintf(esc_html__('Cloudflare backup function is only supported if you have %1$sZipArchive%2$s support. You may need to ask your host to enable this.', 'app-for-cf'), '<code>', '</code>') . '</p></div></body></html>');
-		}
-	}
-
-
-	protected function getCloudflareRepo()
-	{
-		return new \DigitalPoint\Cloudflare\Repository\Cloudflare();
 	}
 }

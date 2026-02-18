@@ -1,6 +1,5 @@
 <?php
 namespace DigitalPoint\Cloudflare\Util;
-
 class Ip
 {
 	// From: https://www.cloudflare.com/ips/
@@ -39,7 +38,7 @@ class Ip
 		$cfIp = (empty($_SERVER['HTTP_CF_CONNECTING_IP']) || !filter_var($_SERVER['HTTP_CF_CONNECTING_IP'], FILTER_VALIDATE_IP)) ? '' : $_SERVER['HTTP_CF_CONNECTING_IP']; /* @phpcs:ignore WordPress.Security.ValidatedSanitizedInput.MissingUnslash, WordPress.Security.ValidatedSanitizedInput.InputNotSanitized */
 		$ip = (empty($_SERVER['REMOTE_ADDR']) || !filter_var($_SERVER['REMOTE_ADDR'], FILTER_VALIDATE_IP)) ? '' : $_SERVER['REMOTE_ADDR']; /* @phpcs:ignore WordPress.Security.ValidatedSanitizedInput.MissingUnslash, WordPress.Security.ValidatedSanitizedInput.InputNotSanitized */
 
-		if($cfIp && $cfIp != $ip)
+		if($cfIp && $cfIp !== $ip)
 		{
 			// A little hacky... better to actually configure your server right, but less support issues I guess (for poorly-configured servers combined with Flexible SSL).
 			if (!empty($_SERVER['HTTP_X_FORWARDED_PROTO']) && $_SERVER['HTTP_X_FORWARDED_PROTO'] === 'https')
@@ -107,7 +106,7 @@ class Ip
 				return false;
 			}
 
-			if (substr($ip, -2) == '.*')
+			if (substr($ip, -2) === '.*')
 			{
 				$ip = substr($ip, 0, -2);
 			}
@@ -244,7 +243,7 @@ class Ip
 			}
 
 			$rangeIp = static::convertIpToBinary($range[0]);
-			$cidr = intval($range[1]);
+			$cidr = (int)$range[1];
 
 			if (static::ipMatchesCidrRange($ip, $rangeIp, $cidr))
 			{

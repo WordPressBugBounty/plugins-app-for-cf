@@ -6,7 +6,6 @@ use DigitalPoint\Cloudflare\Helper\WordPress;
 class Pub
 {
 	protected static $instance;
-
 	protected $preload = [];
 	protected $purgeUrls = [];
 	protected $cloudflareRepo = null;
@@ -18,7 +17,7 @@ class Pub
 	{
 	}
 
-	public static final function getInstance()
+	final public static function getInstance()
 	{
 		if (!static::$instance)
 		{

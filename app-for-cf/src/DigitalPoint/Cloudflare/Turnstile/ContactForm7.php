@@ -1,7 +1,5 @@
 <?php
-
 namespace DigitalPoint\Cloudflare\Turnstile;
-
 class ContactForm7 extends AbstractTurnstile
 {
 	protected function initHooks()

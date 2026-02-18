@@ -21,7 +21,7 @@ class PurgeCache
 	 *
 	 * @subcommand purge-cache
 	 */
-	function purgeCache($args, $assocArgs)
+	public function purgeCache($args, $assocArgs)
 	{
 		$cloudflareRepo = new \DigitalPoint\Cloudflare\Repository\Cloudflare();
 		$cloudflareRepo->purgeCache();

@@ -29,7 +29,6 @@ class Setup
 			'cloudflareBlockIpsSpamClean' => 1,
 			'cfExternalDataUrl' => '',
 			'cloudflarePreload' => 1,
-			'cfWebpCompression' => 0,
 			'cfImagesTransform' => 0,
 			'cfLicenseKey' => '',
 			'cfPurgeCacheOnAdminBar' => 0,

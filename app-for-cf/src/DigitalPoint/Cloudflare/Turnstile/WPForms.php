@@ -1,7 +1,5 @@
 <?php
-
 namespace DigitalPoint\Cloudflare\Turnstile;
-
 class WPForms extends AbstractTurnstile
 {
 	protected function initHooks()

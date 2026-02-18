@@ -169,8 +169,8 @@ trait WP
 			}
 			elseif (!empty($options['body_resource']) && is_resource($options['body_resource']))
 			{
-				$args['headers']['Content-Length'] = fstat($options['body_resource'])['size'];
-				$args['headers']['Transfer-Encoding'] = null;
+//				$args['headers']['Content-Length'] = fstat($options['body_resource'])['size'];
+//				$args['headers']['Transfer-Encoding'] = null;
 				$args['headers']['Content-Type'] = ''; // WordPress sets a default (and invalid Content-Type in the case of uploading R2 objects), setting it blank prevents this.
 			}
 			elseif (!empty($options['body']))
@@ -293,6 +293,14 @@ trait WP
 
 	protected function phrase($phraseKey, $params = [])
 	{
+		if (method_exists($this, 'abstractPhrase'))
+		{
+			if ($return = $this->abstractPhrase($phraseKey))
+			{
+				return $return;
+			}
+		}
+
 		if ($params)
 		{
 			$phrases = [
@@ -402,6 +410,7 @@ trait WP
 				'cf_setting_title.polish' => __('Polish', 'app-for-cf'),
 				'cf_setting_title.webp' => __('Polish WebP', 'app-for-cf'),
 				'cf_setting_title.rocket_loader' => __('Rocket Loader™', 'app-for-cf'),
+				'cf_setting_title.content_converter' => __('Markdown for Agents.', 'app-for-cf'),
 
 				'cf_setting_title.bot_fight_mode' => __('Bot Fight Mode', 'app-for-cf'),
 				'cf_setting_title.ai_bots_protection' => __('AI Bots', 'app-for-cf'),
@@ -456,6 +465,8 @@ trait WP
 				'cf_setting_explain.polish' => __('Improve image load time by optimizing images hosted on your domain.', 'app-for-cf'),
 				'cf_setting_explain.webp' => __('Optionally, the WebP image codec can be used with supported clients for additional performance benefits.', 'app-for-cf'),
 				'cf_setting_explain.rocket_loader' => __('Improve the paint time for pages which include JavaScript.', 'app-for-cf'),
+				'cf_setting_explain.content_converter' => __('Automatically convert HTML to Markdown for requests that use content negotiation headers (Accept: text/markdown)', 'app-for-cf'),
+
 				'cf_setting_explain.bot_fight_mode' => __('Challenge requests that match patterns of known bots, before they access your site.', 'app-for-cf'),
 				'cf_setting_explain.ai_bots_protection' => __('Block bots from scraping your content for AI applications like model training. Note: Blocking AI Bots will also block verified AI bots.', 'app-for-cf'),
 				'cf_setting_explain.crawler_protection' => __('Prevent AI bots that ignore your website\'s robots.txt file from accessing your website\'s content. Unauthorized AI bots will be trapped in a maze of generated nofollow links.', 'app-for-cf'),
@@ -511,6 +522,7 @@ trait WP
 				'pagerules.explicit_cache_control' => __('Origin cache control', 'app-for-cf'),
 				'pagerules.security_level' => __('Security level', 'app-for-cf'),
 				'pagerules.rocket_loader' => __('Rocket Loader', 'app-for-cf'),
+
 				'pagerules.server_side_exclude' => __('Server side excludes', 'app-for-cf'),
 				'pagerules.ssl' => __('SSL', 'app-for-cf'),
 

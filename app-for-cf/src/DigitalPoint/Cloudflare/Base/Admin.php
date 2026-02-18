@@ -16,7 +16,7 @@ class Admin
 	{
 	}
 
-	public static final function getInstance()
+	final public static function getInstance()
 	{
 		if (!static::$instance)
 		{
@@ -130,7 +130,7 @@ class Admin
 				add_action( 'admin_notices', [$this, 'uploadBannerBucketSetup']);
 			}
 
-			wp_register_script('app-for-cf_submenu', '', [], false, ['in_footer' => true]); /* @phpcs:ignore WordPress.WP.EnqueuedResourceParameters.NoExplicitVersion */
+			wp_register_script('app-for-cf_submenu', '', [], APP_FOR_CLOUDFLARE_VERSION, ['in_footer' => true]);
 			wp_enqueue_script('app-for-cf_submenu');
 			wp_add_inline_script('app-for-cf_submenu', 'document.querySelectorAll(".wp-submenu a[href=\'app-for-cf_menu_heading\']").forEach(e=>{e.removeAttribute("href");e.setAttribute("style", "pointer-events:none;font-weight:bold;padding:10px 0 5px 5px;font-size:120%;")})' );
 		}
@@ -320,14 +320,13 @@ class Admin
 
 	public function displayPage($actionOverride = '')
 	{
-		global $plugin_page;
-
 		if ($actionOverride)
 		{
 			$method = 'action' . $actionOverride;
 		}
 		else
 		{
+			global $plugin_page;
 			$method = 'action' . ucwords(strtolower(preg_replace('#[^a-z0-9]#i', '', substr($plugin_page ?: (!empty($_REQUEST['action']) ? sanitize_text_field($_REQUEST['action']) : ''), 11)))); /* @phpcs:ignore WordPress.Security.NonceVerification.Recommended, WordPress.Security.ValidatedSanitizedInput.MissingUnslash */
 		}
 
@@ -350,7 +349,7 @@ class Admin
 
 	public function filterPluginActionLinks($links, $file)
 	{
-		if ($file == plugin_basename(APP_FOR_CLOUDFLARE_PLUGIN_DIR . '/app-for-cf.php'))
+		if ($file === plugin_basename(APP_FOR_CLOUDFLARE_PLUGIN_DIR . '/app-for-cf.php'))
 		{
 			\DigitalPoint\Cloudflare\Helper\WordPress::addAsset('css_admin_plugin');
 

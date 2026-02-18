@@ -7,7 +7,7 @@ Tags: cloudflare, caching, performance, security, SEO
 Requires at least: 5.2
 Tested up to: 6.9
 Requires PHP: 5.4.0
-Stable tag: 1.9.8
+Stable tag: 1.9.9
 
 All things Cloudflare (caching, flexible SSL, Turnstile, settings, rules, analytics, media in R2, image transforms [AVIF, WebP], secure admin area).
 
@@ -92,9 +92,9 @@ Easily and seamlessly store your WordPress media in the cloud with [Cloudflare R
 
 Includes the ability to migrate existing media from local filesystem to R2 (or from R2 to local filesystem). Works with individual media, or all media in bulk (includes web-based migration as well as a shell/WP-CLI option).
 
-**Automatically convert uploaded JPG or PNG images to WebP [Premium]**
+**Automatically convert uploaded images to AVIF or WebP**
 
-While this was intended for use with R2, it can be used without using R2 if you want.
+This is done with a free companion plugin, [Image Shift](https://wordpress.org/plugins/image-shift/) (includes the ability to apply watermarks).
 
 **Protect admin area [Premium]**
 
@@ -223,6 +223,12 @@ Yes, please do! You can find the suggestion area [over here](https://appforcf.co
 29. For multisite networks, you can optionally use a single R2 bucket to store the media across all your sites.
 
 == Changelog ==
+= 1.9.9 (2026-02-17) =
+* Fixed issue where an admin of a site within a multisite network couldn't add a user manually when using Turnstile for registrations
+* Added additional extensions to the Cache Rule for caching static content
+* Added new Cloudflare setting (under Speed): [Markdown for Agents](https://blog.cloudflare.com/markdown-for-agents/)
+* Added `app_for_cf_cache_times` filter to change the default cache times for guest page caching
+
 = 1.9.8 (2025-12-22) =
 * Added internal framework support for streaming R2 objects when copying from/to the local filesystem
 * Added `app_for_cf_purge_cache` filter to control (or piggyback) cache purging

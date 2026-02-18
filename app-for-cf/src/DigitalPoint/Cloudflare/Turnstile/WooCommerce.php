@@ -1,7 +1,5 @@
 <?php
-
 namespace DigitalPoint\Cloudflare\Turnstile;
-
 class WooCommerce extends AbstractTurnstile
 {
 	protected function initHooks()

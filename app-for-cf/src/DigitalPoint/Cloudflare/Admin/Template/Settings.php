@@ -352,9 +352,6 @@ class Settings extends AbstractTemplate
 		?>
 
 
-
-
-
 		<tr class="group_setup tab_content">
 			<th scope="row">
 
@@ -518,29 +515,40 @@ class Settings extends AbstractTemplate
             </td>
         </tr>
 
-        <?php if ((class_exists('Imagick') && \Imagick::queryformats('WEBP')) || function_exists('imagewebp')) { ?>
+
+        <?php if (current_user_can('install_plugins') && !is_plugin_active('image-shift/image-shift.php') && ((class_exists('Imagick') && (\Imagick::queryformats('AVIF') || \Imagick::queryformats('WEBP'))) || function_exists('imageavif') || function_exists('imagewebp')))
+			{
+				wp_enqueue_style('plugin-install');
+				wp_enqueue_script('plugin-install');
+				add_thickbox();
+				?>
 
         <tr class="group_setup tab_content">
             <th scope="row"></th>
-            <td<?php echo (!(int)@$cloudflareAppInternal ? ' class="pro"' : ''); ?>>
+            <td style="border:2px dotted deepskyblue;">
+                <div>
+					<a class="button-primary thickbox open-plugin-details-modal" style="float:right;" href="<?php
+						echo esc_url(
+							add_query_arg(
+								[
+									'TB_iframe' => 'true',
+									'width'     => 600,
+									'height'    => 800,
+								],
+								network_admin_url('plugin-install.php?tab=plugin-information&plugin=image-shift')
+							)
+						);
+						?>"><span aria-hidden="true"><span class="dashicons dashicons-info"></span><?php echo esc_html__('Image Shift info', 'app-for-cf'); ?></span></a>
 
-                <div data-init="dependent">
-                    <input type="hidden" name="app_for_cf[cfWebpCompression]" form="settingsForm" value="0">
-                    <label><input form="settingsForm" type="checkbox" class="primary" value="0" <?php echo (@$appForCloudflareOptions['cfWebpCompression'] ? ' checked' : '') . disabled(0, (int)@$cloudflareAppInternal) ?>><?php esc_html_e('Convert uploaded media to WebP', 'app-for-cf') ?></label>
-                    <div class="dependent">
-	                    <?php esc_html_e('Compression level:', 'app-for-cf');?>
-                        <input type="number" name="app_for_cf[cfWebpCompression]" id="cf-app_cloudflareWebpCompression"
-                               form="settingsForm"
-                               step="1"
-                               min="10"
-                               max="100"
-                               <?php echo @$appForCloudflareOptions['cfWebpCompression'] ? '' : 'disabled' ?>
-                               value="<?php echo esc_attr(@$appForCloudflareOptions['cfWebpCompression'] ?: 80); ?>"<?php disabled(0, (int)@$cloudflareAppInternal); ?>/>
+					<label><input type="checkbox" <?php disabled(true) ?>><?php esc_html_e('Convert uploaded media to AVIF/WebP', 'app-for-cf') ?></label>
+					<div class="explain"><?php
+						esc_html_e('If your server supports ImageMagick or GD with AVIF or WebP, you can convert uploaded images to AVIF or WebP automatically when they are uploaded as media.', 'app-for-cf');
+					?></div>
 
-                        <div class="explain"><?php
-	                        esc_html_e('If your server supports ImageMagick or GD with WebP, you can convert PNG and JPG images to WebP automatically when they are uploaded as media.', 'app-for-cf');
-                        ?></div>
-                    </div>
+					<div class="explain"><?php
+						/* translators: %1$s = <strong>, %2$s = </strong> */
+						printf(esc_html__('Originally, this function was a way to convert images to WebP as part of uploading media to R2 (in Pro version). It was spun out into a free plugin with additional functions (AVIF and watermarking) and can be used independently of media being stored in R2. %1$sThere is no cost whatsoever.%2$s', 'app-for-cf'), '<strong>', '</strong>');
+					?></div>
                 </div>
             </td>
         </tr>

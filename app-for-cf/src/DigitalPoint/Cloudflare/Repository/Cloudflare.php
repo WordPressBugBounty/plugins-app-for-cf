@@ -524,6 +524,13 @@ abstract class CloudflareAbstract extends Repository
 				'not_good_alert' => true,
 				'data_type' => 'bool',
 			],
+			'content_converter' => [
+				'section' => 'speed',
+				'good' => 'on',
+				'beta' => true,
+				'data_type' => 'bool',
+				'override_endpoint' => 'settings/content_converter',
+			],
 
 			'http2' => [
 				'section' => 'speed',
