@@ -541,8 +541,6 @@ class Admin
 			];
 
 
-
-
 			$plugins		= Pub::getInstance()->applyFilters('all_plugins', get_plugins());
 			$plugin_updates = get_plugin_updates();
 

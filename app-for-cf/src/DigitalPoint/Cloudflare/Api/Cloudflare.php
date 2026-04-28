@@ -13,7 +13,7 @@ abstract class CloudflareAbstract
 	abstract protected function parseResponse($response);
 	abstract protected function logError($message);
 	abstract protected function phrase($phraseKey, array $params = []);
-	abstract protected function printableException($message, $code = 0, \Exception $previous = null);
+	abstract protected function printableException($message, $code = 0, $previous = null);
 
 	protected $baseUrl = 'https://api.cloudflare.com/client/v4/';
 	protected $zuluTimeFormat = 'Y-m-d\TH:i:s\Z';

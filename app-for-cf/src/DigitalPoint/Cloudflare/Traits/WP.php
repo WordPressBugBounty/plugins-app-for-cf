@@ -573,6 +573,8 @@ trait WP
 				'cloudflare_turnstile_site_exists' => __('Your Cloudflare account already has a Turnstile site for this domain.', 'app-for-cf'),
 				'cloudflare_turnstile_site_exists_view_existing' => __('View existing Site Key and Secret Key', 'app-for-cf'),
 
+				'site_title_must_be_set' => __('Site title must be set (under Settings -> General).', 'app-for-cf'),
+
 				'please_select_a_zone' => __('Please select a zone.', 'app-for-cf'),
 
 			];
@@ -585,7 +587,7 @@ trait WP
 
 		return $phraseKey;
 	}
-	protected function printableException($message, $code = 0, \Exception $previous = null)
+	protected function printableException($message, $code = 0, $previous = null)
 	{
 		$this->logError($message);
 	}

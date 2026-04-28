@@ -188,6 +188,38 @@ class Pub
 			\DigitalPoint\Cloudflare\Base\PubAdvanced::getInstance();
 		}
 
+		/*
+		 * Third party plugins
+		 *
+		 * Would be nice if it was in their own plugins, but it is what it is...
+		 */
+		if (!is_multisite())
+		{
+			$gravityMultisiteActive = false;
+		}
+		else
+		{
+			$plugins = get_site_option('active_sitewide_plugins');
+			if (isset($plugins['gravityforms/gravityforms.php']))
+			{
+				$gravityMultisiteActive = true;
+			}
+			else
+			{
+				$gravityMultisiteActive = false;
+			}
+		}
+
+		if(in_array('gravityforms/gravityforms.php', apply_filters('active_plugins', get_option('active_plugins')), true) || $gravityMultisiteActive)
+		{
+			add_filter('app_for_cf_no_cache', function($noCache) {
+				if (!empty($GLOBALS['post']) && $GLOBALS['post'] instanceof \WP_Post && has_shortcode($GLOBALS['post']->post_content, 'gravityforms'))
+				{
+					$noCache = true;
+				}
+				return $noCache;
+			});
+		}
 	}
 
 	public static function plugin_activation()
@@ -253,6 +285,8 @@ class Pub
 				$noCache = (bool)preg_grep('#^' . implode('|', $matches[1]) . '#si', array_keys($_COOKIE));
 			}
 		}
+
+		$noCache = static::applyFilters('app_for_cf_no_cache', $noCache);
 
 		$cloudflareAppOptions = $this->cloudflareRepo->option(null);
 

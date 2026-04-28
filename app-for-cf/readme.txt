@@ -5,9 +5,9 @@ License: GPLv3
 License URI: http://www.gnu.org/licenses/gpl.html
 Tags: cloudflare, caching, performance, security, SEO
 Requires at least: 5.2
-Tested up to: 6.9
+Tested up to: 7.0
 Requires PHP: 5.4.0
-Stable tag: 1.9.9
+Stable tag: 1.10.0
 
 All things Cloudflare (caching, flexible SSL, Turnstile, settings, rules, analytics, media in R2, image transforms [AVIF, WebP], secure admin area).
 
@@ -223,6 +223,10 @@ Yes, please do! You can find the suggestion area [over here](https://appforcf.co
 29. For multisite networks, you can optionally use a single R2 bucket to store the media across all your sites.
 
 == Changelog ==
+= 1.10.0 (2026-04-27) =
+* Added `app_for_cf_no_cache` filter to flag if the current page should not be cached
+* Flagged as compatible with WordPress 7.0
+
 = 1.9.9 (2026-02-17) =
 * Fixed issue where an admin of a site within a multisite network couldn't add a user manually when using Turnstile for registrations
 * Added additional extensions to the Cache Rule for caching static content
@@ -236,7 +240,7 @@ Yes, please do! You can find the suggestion area [over here](https://appforcf.co
 
 = 1.9.7 (2025-12-09) =
 * Added the ability to copy Cloudflare zone settings from a different zone on the same Cloudflare account
-* Fixed issue where ability to set multisite, network-wide API token was not visible
+* Fixed the issue where the ability to set multisite, network-wide API token was not visible
 * Added the ability to see existing API token permissions in network admin (for multisite networks)
 
 = 1.9.6.2 (2025-11-19) =

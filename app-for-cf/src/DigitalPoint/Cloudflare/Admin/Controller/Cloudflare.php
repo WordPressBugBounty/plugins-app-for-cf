@@ -750,8 +750,13 @@ class Cloudflare extends Advanced\Cloudflare
 
 		if ($this->isPost())
 		{
+			if ($siteName = get_bloginfo('name'))
+			{
+				return $this->error($this->phrase('site_title_must_be_set'));
+			}
+
 			$result = $cloudflareRepo->addTurnstileSite(
-				get_bloginfo('name'),
+				$siteName,
 				wp_parse_url($this->getSiteUrl(), PHP_URL_HOST)
 			);
 
