@@ -4,10 +4,10 @@ Donate link: https://appforcf.com/items/app-for-cloudflare%C2%AE-pro.1/?utm_sour
 License: GPLv3
 License URI: http://www.gnu.org/licenses/gpl.html
 Tags: cloudflare, caching, performance, security, SEO
-Requires at least: 5.2
+Requires at least: 6.4
 Tested up to: 7.0
 Requires PHP: 5.4.0
-Stable tag: 1.10.0
+Stable tag: 1.10.1
 
 All things Cloudflare (caching, flexible SSL, Turnstile, settings, rules, analytics, media in R2, image transforms [AVIF, WebP], secure admin area).
 
@@ -56,7 +56,7 @@ Automatically handles the situation where your web server is passing Cloudflare 
 
 **Turnstile CAPTCHA**
 
-Cloudflare Turnstile CAPTCHA support for registration, login, password reset, comment forms, [WooCommerce](https://wordpress.org/plugins/woocommerce/), [Contact Form 7](https://wordpress.org/plugins/contact-form-7/), [HTML Forms](https://wordpress.org/plugins/html-forms/), [MetForm](https://wordpress.org/plugins/metform/) and/or [WPForms](https://wordpress.org/plugins/wpforms-lite/). Single-click setup (done transparently via API call).
+Cloudflare Turnstile CAPTCHA support for registration, login, password reset, comment forms, [WooCommerce](https://wordpress.org/plugins/woocommerce/), [Contact Form 7](https://wordpress.org/plugins/contact-form-7/), [Elementor Pro](https://elementor.com/pro/), [HTML Forms](https://wordpress.org/plugins/html-forms/), [MetForm](https://wordpress.org/plugins/metform/) and/or [WPForms](https://wordpress.org/plugins/wpforms-lite/). Single-click setup (done transparently via API call).
 
 **Network analytics**
 
@@ -223,6 +223,14 @@ Yes, please do! You can find the suggestion area [over here](https://appforcf.co
 29. For multisite networks, you can optionally use a single R2 bucket to store the media across all your sites.
 
 == Changelog ==
+= 1.10.1 (2026-08-17) =
+* Updated URL endpoint for Access Apps to reflect change that Cloudflare made
+* Added compatibility support for Turnstile during logins when using Wordfence 2FA
+* Added ability to add APP_FOR_CLOUDFLARE_R2_NO_BANNER constant to WordPress config to never show the R2 banner to any user: `define('APP_FOR_CLOUDFLARE_R2_NO_BANNER', true);`
+* Added Turnstile support for [Elementor Pro](https://elementor.com/pro/) (thanks to [brkicpc](https://appforcf.com/threads/turnstile-for-elementor-pro-forms.158/)
+* Raised minimum required WordPress version to 6.4.0
+* Flagged as compatible with WordPress 7.1
+
 = 1.10.0 (2026-04-27) =
 * Added `app_for_cf_no_cache` filter to flag if the current page should not be cached
 * Flagged as compatible with WordPress 7.0

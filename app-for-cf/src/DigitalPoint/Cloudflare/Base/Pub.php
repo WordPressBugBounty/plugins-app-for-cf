@@ -161,10 +161,13 @@ class Pub
 			{
 				\DigitalPoint\Cloudflare\Turnstile\WooCommerce::getInstance($turnstileOptions);
 			}
-
 			if (WordPress::isPluginActive('contact-form-7/wp-contact-form-7.php'))
 			{
 				\DigitalPoint\Cloudflare\Turnstile\ContactForm7::getInstance($turnstileOptions);
+			}
+			if (WordPress::isPluginActive('elementor-pro/elementor-pro.php'))
+			{
+				\DigitalPoint\Cloudflare\Turnstile\ElementorPro::getInstance($turnstileOptions);
 			}
 			if (WordPress::isPluginActive('html-forms/html-forms.php'))
 			{
@@ -210,7 +213,7 @@ class Pub
 			}
 		}
 
-		if(in_array('gravityforms/gravityforms.php', apply_filters('active_plugins', get_option('active_plugins')), true) || $gravityMultisiteActive)
+		if(in_array('gravityforms/gravityforms.php', apply_filters('active_plugins', get_option('active_plugins')), true) || $gravityMultisiteActive) /* @phpcs:ignore WordPress.NamingConventions.PrefixAllGlobals.NonPrefixedHooknameFound */
 		{
 			add_filter('app_for_cf_no_cache', function($noCache) {
 				if (!empty($GLOBALS['post']) && $GLOBALS['post'] instanceof \WP_Post && has_shortcode($GLOBALS['post']->post_content, 'gravityforms'))

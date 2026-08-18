@@ -446,6 +446,7 @@ class Settings extends AbstractTemplate
 								],
 								__('Contact forms', 'app-for-cf') => [
 									'onContactForm7' => __('Contact Form 7', 'contact-form-7'), /* @phpcs:ignore WordPress.WP.I18n.TextDomainMismatch */
+									'onElementorPro' => __('Elementor Pro', 'elementor-pro'), /* @phpcs:ignore WordPress.WP.I18n.TextDomainMismatch */
 									'onHtmlForms' => __('HTML Forms', 'html-forms'), /* @phpcs:ignore WordPress.WP.I18n.TextDomainMismatch */
 									'onMetForm' => __('MetForm', 'metform'), /* @phpcs:ignore WordPress.WP.I18n.TextDomainMismatch */
 									'onWPForms' => __('WPForms', 'wpforms-lite'), /* @phpcs:ignore WordPress.WP.I18n.TextDomainMismatch */

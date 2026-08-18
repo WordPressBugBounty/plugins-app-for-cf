@@ -122,6 +122,11 @@ class WordPress extends AbstractTurnstile
 
 	public function authenticate($user)
 	{
+		if ($_POST['action'] === 'wordfence_ls_authenticate' && class_exists('\wfConfig'))  /* @phpcs:ignore WordPress.Security.NonceVerification.Missing, WordPress.Security.ValidatedSanitizedInput.InputNotValidated */
+		{
+			return $user;
+		}
+
 		if ($this->verifyRan)
 		{
 			return $user;

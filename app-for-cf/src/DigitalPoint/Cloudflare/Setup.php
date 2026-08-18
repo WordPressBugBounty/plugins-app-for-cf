@@ -40,6 +40,7 @@ class Setup
 				'onPassword' => 0,
 				'onComment' => 0,
 				'onContactForm7' => 0,
+				'onElementorPro' => 0,
 				'onHtmlForms' => 0,
 				'onMetForm' => 0,
 				'onWPForms' => 0,

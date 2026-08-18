@@ -10,7 +10,7 @@ class Access extends AbstractTable
 		{
 			echo '<div class="tablenav-pages">';
 			echo '<a class="button-primary" data-click="overlay" href="' . esc_attr(wp_nonce_url(add_query_arg(array('action' => 'admin_policy'), esc_url(menu_page_url('app-for-cf_access', false))))) . '"><span aria-hidden="true"><span class="dashicons dashicons-shield""></span>' . esc_html__('Create admin access policy', 'app-for-cf') . '</span></a>
-<a class="button-secondary" href="' . esc_url_raw($this->_args['dash_base']) . '/access/apps" target="_blank"><span aria-hidden="true"><span class="dashicons dashicons-external"></span>' . esc_html__('View in Cloudflare', 'app-for-cf') . '</span></a>
+<a class="button-secondary" href="' . esc_url_raw($this->_args['dash_base']) . '/access-controls/apps" target="_blank"><span aria-hidden="true"><span class="dashicons dashicons-external"></span>' . esc_html__('View in Cloudflare', 'app-for-cf') . '</span></a>
 </div>';
 		}
 	}

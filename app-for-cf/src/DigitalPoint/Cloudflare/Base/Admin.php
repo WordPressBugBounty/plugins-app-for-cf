@@ -258,7 +258,7 @@ class Admin
 	{
 		$transientKey = 'app_for_cf_dismiss_notice_r2_';
 
-		if (get_current_screen()->base === 'upload' && !get_transient($transientKey . wp_get_current_user()->ID))
+		if (!defined('APP_FOR_CLOUDFLARE_R2_NO_BANNER') && get_current_screen()->base === 'upload' && !get_transient($transientKey . wp_get_current_user()->ID))
 		{
 			echo wp_kses(
 				str_replace('<<INSERT_BUTTON>>', '<a class="button-primary" href="' . APP_FOR_CLOUDFLARE_PRO_PRODUCT_URL . '?utm_source=admin_media&utm_medium=wordpress&utm_campaign=plugin" _target="_blank"><span aria-hidden="true"><span class="dashicons dashicons-money-alt"></span>' . esc_html__('App for Cloudflare® Pro', 'app-for-cf') . '</span></a>', $this->getUploadBannerBase($transientKey)),
